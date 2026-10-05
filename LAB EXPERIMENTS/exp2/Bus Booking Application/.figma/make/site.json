@@ -1,0 +1,10 @@
+{
+  "description": "Easily search, compare, and book bus tickets with interactive seat selection and secure payment options, streamlining travel planning for users.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
