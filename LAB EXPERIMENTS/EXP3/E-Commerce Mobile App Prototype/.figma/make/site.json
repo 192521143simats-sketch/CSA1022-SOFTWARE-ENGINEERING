@@ -1,0 +1,10 @@
+{
+  "description": "Interactive mobile e-commerce prototype offering three UI designs for stakeholder review to compare, provide feedback, and approve the final user interface.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
