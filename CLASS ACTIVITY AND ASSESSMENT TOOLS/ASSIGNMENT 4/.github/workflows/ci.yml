@@ -1,0 +1,107 @@
+name: ci
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: campus-backend
+
+jobs:
+  # ---------------------------------------------------------------- Gate 1: tests
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements-dev.txt
+      - name: Unit tests
+        run: python -m pytest -m unit -v --junitxml=reports/unit.xml
+      - name: Integration tests (isolated SQLite file per test)
+        run: python -m pytest -m integration -v --junitxml=reports/integration.xml
+      - name: Regression tests
+        run: python -m pytest -m regression -v --junitxml=reports/regression.xml
+      - name: Security / authorisation tests
+        run: python -m pytest -m security -v --junitxml=reports/security.xml
+      - name: Migration + recovery tests
+        run: python -m pytest -m migration -v --junitxml=reports/migration.xml
+      - name: Coverage gate (>= 80 % lines)
+        run: python -m pytest --cov=campus --cov-report=xml --cov-fail-under=80 -q
+      - uses: actions/upload-artifact@v4
+        if: always()                       # publish reports even when tests fail
+        with:
+          name: test-reports
+          path: |
+            reports/
+            coverage.xml
+
+  # ----------------------------------------------------------- Gate 2: security
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }           # full history for secret scanning
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install bandit pip-audit -r requirements.txt
+      - name: Static analysis (bandit, medium+ severity fails)
+        run: bandit -r campus -ll
+      - name: Dependency vulnerabilities (pip-audit)
+        run: pip-audit -r requirements.txt
+      - name: Secret scan (repo + history)
+        uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+
+  # ------------------------------------------------- Gate 3: build + image scan
+  package:
+    needs: [test, security]                # skipped if EITHER gate fails
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: meta
+        run: echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+      - name: Build image tagged with commit SHA
+        run: docker build --build-arg GIT_SHA=${{ github.sha }} --build-arg APP_VERSION=${{ github.ref_name }} -t $IMAGE:${{ steps.meta.outputs.tag }} .
+      - name: Scan image (fail on HIGH/CRITICAL with a fix available)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Record image digest
+        run: docker image inspect $IMAGE:${{ steps.meta.outputs.tag }} --format '{{.Id}}' | tee image-digest.txt
+      - uses: actions/upload-artifact@v4
+        with: { name: image-identity, path: image-digest.txt }
+
+  # ------------------------------- Gate 4: isolated deployment + smoke + migration
+  deploy-test:
+    needs: package
+    runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: ${{ secrets.TEST_SECRET_KEY }}      # never committed
+      GIT_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Start isolated stack
+        run: docker compose -p campus-test up -d --build
+      - name: Smoke journey (readiness, auth, create-read-transition)
+        run: EXPECT_COMMIT=$GITHUB_SHA python scripts/smoke_test.py
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose -p campus-test logs --no-color
+      - name: Roll back to previous image on failure
+        if: failure()
+        run: ./scripts/rollback.sh
+      - name: Tear down
+        if: always()
+        run: docker compose -p campus-test down -v

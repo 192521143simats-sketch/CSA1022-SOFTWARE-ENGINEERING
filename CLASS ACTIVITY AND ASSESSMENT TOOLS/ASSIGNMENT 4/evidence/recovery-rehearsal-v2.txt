@@ -1,0 +1,45 @@
+[   0.0s] release A (known good) = v2.0.0 57668fcd6178
+[   0.0s] release B (candidate)  = defect/v2-destructive-003 75e3e02d6aca
+[   0.0s] --- PART 1: unavailable dependency (tracker down) on release A
+[   0.1s] migrate -> applied: [1, 2]
+[   0.4s] create ticket while tracker is down -> HTTP 201, sync_status=Pending, remote_id=None
+[   0.4s] ticket is readable locally -> HTTP 200 state=New sync_status=Pending
+[   1.8s] persistent state after outage: {'tickets': 1, 'bookings': 0, 'audit': 1}
+[   1.8s] --- PART 2: normal operation on release A, then verified backup
+[   1.9s] migrate -> applied: []
+[   2.2s] smoke(A baseline): exit=0  SMOKE PASSED
+[   2.2s] verify(before backup): booking=200 ticket=200 audit=200  booking.status=Approved ticket.state=Assigned audit_rows=3
+[   2.2s] backup campus-pre-release.db sha256=e034f5731dd520db... counts={'bookings': 2, 'tickets': 3, 'audit': 13, 'schema_version': 2} (0.01s)
+[   2.2s] one more booking accepted AFTER the backup (id=3) - this is the data-loss window
+[   3.7s] --- PART 3: deploy release B (deliberately failed deployment)
+[   3.7s] migrate -> applied: [3]
+[   4.1s] smoke(B): exit=1  SMOKE FAILED: ['faculty can create booking', 'student cannot approve (403)', 'approver can approve', 'overlap rejected (409)', 'ticket created with priority M3', 'technician transition']
+          FAIL faculty can create booking -> (500, {'error': 'internal', 'message': 'internal error'})
+          FAIL student cannot approve (403) -> 
+          FAIL approver can approve -> 
+          FAIL overlap rejected (409) -> 
+          FAIL ticket created with priority M3 -> (500, {'error': 'internal', 'message': 'internal error'})
+          FAIL technician transition -> (404, {'error': 'not_found', 'message': 'The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.'})
+[   4.1s] FAILED DEPLOYMENT DETECTED by smoke gate after 0.4s
+[   4.1s] verify(on B): booking=404 ticket=200 audit=500
+[   5.6s] --- PART 4: rollback attempt #1 - revert to release A code only (image rollback)
+[   5.6s] migrate -> applied: []
+[   5.9s] smoke(A code on migrated DB): exit=1  SMOKE FAILED: ['faculty can create booking', 'student cannot approve (403)', 'approver can approve', 'overlap rejected (409)', 'ticket created with priority M3', 'technician transition']
+          FAIL faculty can create booking -> (500, {'error': 'internal', 'message': 'internal error'})
+          FAIL student cannot approve (403) -> 
+          FAIL approver can approve -> 
+          FAIL overlap rejected (409) -> 
+          FAIL ticket created with priority M3 -> (500, {'error': 'internal', 'message': 'internal error'})
+          FAIL technician transition -> (404, {'error': 'not_found', 'message': 'The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.'})
+[   5.9s] verify(A code on migrated DB): booking=404 ticket=200 audit=500
+[   5.9s] image/code rollback sufficient? False  (schema_version=3 counts={'bookings': 0, 'audit': None})
+[   7.4s] --- PART 5: rollback attempt #2 - restore the verified backup, then run release A
+[   7.4s] restored counts (before restart) = {'bookings': 2, 'tickets': 3, 'audit': 13, 'schema_version': 2}
+[   7.4s] manifest counts                  = {'bookings': 2, 'tickets': 3, 'audit': 13, 'schema_version': 2}  -> identical: True
+[   7.4s] records written after the backup still present: 0, lost: 1  (recovery point = backup time)
+[   7.4s] migrate -> applied: []
+[   7.7s] smoke(A code on restored DB): exit=0  SMOKE PASSED
+[   7.7s] verify(restored): booking=200 ticket=200 audit=200  booking.status=Approved ticket.state=Assigned audit_rows=3
+[   7.7s] FINDING: id 3 (the lost booking) now resolves to HTTP 200 title='smoke' - SQLite rowids are reused after a restore
+[   7.7s] RECOVERY DURATION from failed-deploy detection to verified service: 4.0s
+[   7.7s] RESULT: PASS - service restored, pre-backup data intact

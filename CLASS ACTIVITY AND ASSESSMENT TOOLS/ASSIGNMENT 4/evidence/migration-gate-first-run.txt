@@ -1,0 +1,18 @@
+First run of scripts/migration_gate.py on the synthetic release-1.0 fixture (200 bookings, 120 tickets, 320 audit rows)
+
+$ python scripts/make_v1_fixture.py /tmp/fx.db
+fixture written: /tmp/fx.db
+$ python scripts/migration_gate.py snapshot /tmp/fx.db /tmp/fx.json
+snapshot written: {'facilities': 3, 'bookings': 200, 'tickets': 120, 'audit': 320}
+$ DB_PATH=/tmp/fx.db python -m campus.db
+applied: [2]
+$ python scripts/migration_gate.py verify /tmp/fx.db /tmp/fx.json
+MIGRATION GATE: FAILED
+  - facilities: original data changed (before 3 rows, after 4 rows; checksum DIFFERENT)
+
+Diagnosis: migration 002 deliberately ADDS the reference facility LAB-S1. The gate compared the
+whole table, so a legitimate addition looked like corruption (false positive in the gate, not a
+data defect). Fix: snapshots record max_id per table and the comparison covers only rows that
+existed before the migration (id <= max_id). Re-run after the fix:
+
+MIGRATION GATE: PASSED

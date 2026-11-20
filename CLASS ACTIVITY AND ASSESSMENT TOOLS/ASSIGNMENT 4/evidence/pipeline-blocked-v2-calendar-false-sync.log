@@ -1,0 +1,85 @@
+PIPELINE START  commit=dba179dc5ed11754f819ee7adf580e1e99feccd1  version=v2.0.0-1-gdba179d  2026-11-20T12:30:12Z
+
+=== STAGE: 1 checkout
+tracked-file changes: 0
+commit dba179dc5ed11754f819ee7adf580e1e99feccd1
+author Student
+subject Simplify retry handling: do not block approvals on calendar errors (injected defect)
+--- [PASS] 1 checkout (0s)
+
+=== STAGE: 2 dependency setup
+No broken requirements found.
+Python 3.13.18
+--- [PASS] 2 dependency setup (1s)
+
+=== STAGE: 3 compile / lint
+--- [PASS] 3 compile / lint (0s)
+
+=== STAGE: 4a unit tests
+..............................................................           [100%]
+62 passed, 61 deselected in 0.04s
+--- [PASS] 4a unit tests (0s)
+
+=== STAGE: 4b integration tests
+.....F...............FF.                                                 [100%]
+=================================== FAILURES ===================================
+_ test_I6_tracker_outage_keeps_local_work_pending_then_sync_without_duplicates _
+
+env = <conftest.Env object at 0x7f5cd1d7e9f0>
+
+    def test_I6_tracker_outage_keeps_local_work_pending_then_sync_without_duplicates(env):
+        env.tracker.mode = "down"
+        r = env.client.post("/api/v1/tickets", json=TICKET, headers=env.h("faculty"))
+        t = r.get_json()
+>       assert r.status_code == 201 and t["sync_status"] == "Pending" and t["remote_id"] is None
+E       AssertionError: assert (201 == 201 and 'Synced' == 'Pending'
+E        +  where 201 = <WrapperTestResponse 299 bytes [201 CREATED]>.status_code
+E         
+E         - Pending
+E         + Synced)
+
+tests/test_integration.py:96: AssertionError
+_ test_I12_calendar_outage_keeps_local_approval_and_retries_on_a_bounded_schedule _
+
+env = <conftest.Env object at 0x7f5cd1c505f0>
+
+    @pytest.mark.integration
+    def test_I12_calendar_outage_keeps_local_approval_and_retries_on_a_bounded_schedule(env):
+        env.calendar.mode = "down"
+        b = env.client.post("/api/v1/bookings", json=booking(), headers=env.h("faculty")).get_json()
+        a = env.client.post("/api/v2/bookings/%d/approve" % b["id"], headers=env.h("approver")).get_json()
+>       assert a["status"] == "Approved" and a["calendar_status"] == "Pending"          # not shown as synced
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: assert ('Approved' == 'Approved'
+E         
+E           Approved and 'Synced' == 'Pending'
+E         
+E         - Pending
+E         + Synced)
+
+tests/test_release2.py:92: AssertionError
+__ test_I13_after_five_failures_item_needs_operator_and_local_state_is_intact __
+
+env = <conftest.Env object at 0x7f5cd1c952d0>
+
+    @pytest.mark.integration
+    def test_I13_after_five_failures_item_needs_operator_and_local_state_is_intact(env):
+        env.tracker.mode = "down"
+        t = env.client.post("/api/v1/tickets", headers=env.h("faculty"),
+                            json={"title": "Door lock jammed", "impact": "High", "urgency": "High"}).get_json()
+        for _ in range(4):
+            env.clock += timedelta(hours=1)
+            env.client.post("/api/v2/integrations/flush", headers=env.h("technician"))
+        st = env.client.get("/api/v2/integrations/status", headers=env.h("technician")).get_json()
+>       assert st["counts"]["NeedsOperator"] == 1 and st["oldest_unsynced_age_s"] > 0
+E       assert (0 == 1)
+
+tests/test_release2.py:118: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_integration.py::test_I6_tracker_outage_keeps_local_work_pending_then_sync_without_duplicates
+FAILED tests/test_release2.py::test_I12_calendar_outage_keeps_local_approval_and_retries_on_a_bounded_schedule
+FAILED tests/test_release2.py::test_I13_after_five_failures_item_needs_operator_and_local_state_is_intact
+3 failed, 21 passed, 99 deselected in 0.43s
+--- [FAIL] 4b integration tests
+!!! QUALITY GATE FAILED at '4b integration tests' -> package + deploy stages SKIPPED; previous release stays live
+PIPELINE RESULT: BLOCKED  commit=dba179dc5ed1

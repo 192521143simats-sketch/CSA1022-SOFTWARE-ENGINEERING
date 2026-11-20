@@ -1,0 +1,18 @@
+// Equivalent declarative pipeline for a Jenkins server (alternative tool in the Q1 comparison).
+pipeline {
+  agent any
+  environment {
+    SECRET_KEY = credentials('campus-test-secret-key')   // Jenkins credential store, not source code
+    IMAGE      = 'campus-backend'
+  }
+  stages {
+    stage('Checkout')   { steps { checkout scm; script { env.SHA = sh(returnStdout: true, script: 'git rev-parse --short=12 HEAD').trim() } } }
+    stage('Deps')       { steps { sh 'python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt' } }
+    stage('Tests')      { steps { sh '.venv/bin/python -m pytest --cov=campus --cov-fail-under=80 --junitxml=reports/all.xml' }
+                          post { always { junit 'reports/*.xml' } } }
+    stage('Security')   { steps { sh '.venv/bin/bandit -r campus -ll && .venv/bin/pip-audit -r requirements.txt && .venv/bin/python scripts/secret_scan.py' } }
+    stage('Build')      { steps { sh 'docker build --build-arg GIT_SHA=$(git rev-parse HEAD) -t $IMAGE:$SHA .' } }
+    stage('Deploy test'){ steps { sh 'GIT_SHA=$(git rev-parse HEAD) docker compose -p campus-test up -d --build && EXPECT_COMMIT=$(git rev-parse HEAD) .venv/bin/python scripts/smoke_test.py' } }
+  }
+  post { always { sh 'docker compose -p campus-test down -v || true' } }
+}

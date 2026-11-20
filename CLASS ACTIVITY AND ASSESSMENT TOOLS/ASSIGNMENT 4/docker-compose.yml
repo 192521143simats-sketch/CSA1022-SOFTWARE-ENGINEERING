@@ -1,0 +1,21 @@
+# Isolated test deployment. Run with:  docker compose -p campus-test up -d --build
+# Secrets come from the environment / CI secret store, not from this file.
+services:
+  api:
+    build:
+      context: .
+      args:
+        GIT_SHA: ${GIT_SHA:-dev}
+        APP_VERSION: ${APP_VERSION:-1.0.0}
+    image: campus-backend:${GIT_SHA:-dev}
+    environment:
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY (CI secret)}
+      TRACKER_MODE: ${TRACKER_MODE:-ok}        # controlled stand-in for the issue tracker
+    ports:
+      - "127.0.0.1:18000:8000"                 # test port only, loopback
+    volumes:
+      - campus-data:/data
+      - ./backups:/backups                     # a bind-mounted folder, not just a named volume
+    restart: "no"
+volumes:
+  campus-data:

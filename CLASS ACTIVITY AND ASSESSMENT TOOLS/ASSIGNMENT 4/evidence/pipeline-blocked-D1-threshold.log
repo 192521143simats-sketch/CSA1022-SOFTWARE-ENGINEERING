@@ -1,0 +1,67 @@
+PIPELINE START  commit=6f0ac9acb57e3671a59cf4d7a919eb077b04b410  version=v1.0.0-1-g6f0ac9a  2026-11-20T03:16:24Z
+
+=== STAGE: 1 checkout
+tracked-file changes: 0
+commit 6f0ac9acb57e3671a59cf4d7a919eb077b04b410
+author Student
+subject Tune sensor alerting: breach at or above limit (injected defect D1)
+--- [PASS] 1 checkout (0s)
+
+=== STAGE: 2 dependency setup
+No broken requirements found.
+Python 3.13.18
+--- [PASS] 2 dependency setup (1s)
+
+=== STAGE: 3 compile / lint
+--- [PASS] 3 compile / lint (0s)
+
+=== STAGE: 4a unit tests
+................FFF.....................................                 [100%]
+=================================== FAILURES ===================================
+___ test_U3_sensor_threshold_boundary_is_strictly_greater_than[28.00-False] ____
+
+value = '28.00', expected = False
+
+    @pytest.mark.parametrize("value,expected", [
+        ("27.99", False), ("28.00", False), (28, False), (28.0, False), ("28.01", True), (28.01, True), (90, True)])
+    def test_U3_sensor_threshold_boundary_is_strictly_greater_than(value, expected):
+>       assert rules.breached(value) is expected
+E       AssertionError: assert True is False
+E        +  where True = <function breached at 0x7f52250e6b60>('28.00')
+E        +    where <function breached at 0x7f52250e6b60> = rules.breached
+
+tests/test_unit.py:32: AssertionError
+_____ test_U3_sensor_threshold_boundary_is_strictly_greater_than[28-False] _____
+
+value = 28, expected = False
+
+    @pytest.mark.parametrize("value,expected", [
+        ("27.99", False), ("28.00", False), (28, False), (28.0, False), ("28.01", True), (28.01, True), (90, True)])
+    def test_U3_sensor_threshold_boundary_is_strictly_greater_than(value, expected):
+>       assert rules.breached(value) is expected
+E       assert True is False
+E        +  where True = <function breached at 0x7f52250e6b60>(28)
+E        +    where <function breached at 0x7f52250e6b60> = rules.breached
+
+tests/test_unit.py:32: AssertionError
+____ test_U3_sensor_threshold_boundary_is_strictly_greater_than[28.0-False] ____
+
+value = 28.0, expected = False
+
+    @pytest.mark.parametrize("value,expected", [
+        ("27.99", False), ("28.00", False), (28, False), (28.0, False), ("28.01", True), (28.01, True), (90, True)])
+    def test_U3_sensor_threshold_boundary_is_strictly_greater_than(value, expected):
+>       assert rules.breached(value) is expected
+E       assert True is False
+E        +  where True = <function breached at 0x7f52250e6b60>(28.0)
+E        +    where <function breached at 0x7f52250e6b60> = rules.breached
+
+tests/test_unit.py:32: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_unit.py::test_U3_sensor_threshold_boundary_is_strictly_greater_than[28.00-False]
+FAILED tests/test_unit.py::test_U3_sensor_threshold_boundary_is_strictly_greater_than[28-False]
+FAILED tests/test_unit.py::test_U3_sensor_threshold_boundary_is_strictly_greater_than[28.0-False]
+3 failed, 53 passed, 42 deselected in 0.05s
+--- [FAIL] 4a unit tests
+!!! QUALITY GATE FAILED at '4a unit tests' -> package + deploy stages SKIPPED; previous release stays live
+PIPELINE RESULT: BLOCKED  commit=6f0ac9acb57e

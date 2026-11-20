@@ -1,0 +1,91 @@
+==============================================================================
+DEFECT D1-threshold-gte
+  sensor threshold boundary: 28.0 wrongly breaches
+  file: campus/rules.py
+  injected-run exit=1  | 4 failed, 92 passed in 0.59s
+  failing tests: test_R7_sensor_equality_does_not_breach_but_28_01_does, test_U3_sensor_threshold_boundary_is_strictly_greater_than
+  after correction exit=0 | 96 passed in 0.56s
+
+--- raw output with defect (failures only) ---
+E   assert (True is False)
+/home/claude/campus-platform/tests/test_regression.py:68: assert (True is False)
+E   AssertionError: assert True is False
+/home/claude/campus-platform/tests/test_unit.py:32: AssertionError: assert True is False
+E   assert True is False
+/home/claude/campus-platform/tests/test_unit.py:32: assert True is False
+E   assert True is False
+/home/claude/campus-platform/tests/test_unit.py:32: assert True is False
+FAILED tests/test_regression.py::test_R7_sensor_equality_does_not_breach_but_28_01_does
+FAILED tests/test_unit.py::test_U3_sensor_threshold_boundary_is_strictly_greater_than[28.00-False]
+FAILED tests/test_unit.py::test_U3_sensor_threshold_boundary_is_strictly_greater_than[28-False]
+FAILED tests/test_unit.py::test_U3_sensor_threshold_boundary_is_strictly_greater_than[28.0-False]
+
+==============================================================================
+DEFECT D2-matrix-high-high-M2
+  triage: High/High returns M2 instead of M1
+  file: campus/rules.py
+  injected-run exit=1  | 2 failed, 94 passed in 0.56s
+  failing tests: test_I2_repeated_sensor_event_creates_one_ticket, test_U1_priority_matrix_all_nine_cells
+  after correction exit=0 | 96 passed in 0.63s
+
+--- raw output with defect (failures only) ---
+E   AssertionError: assert ('M2', 'HVAC') == ('M1', 'HVAC')
+/home/claude/campus-platform/tests/test_integration.py:48: AssertionError: assert ('M2', 'HVAC') == ('M1', 'HVAC')
+E   AssertionError: assert 'M2' == 'M1'
+/home/claude/campus-platform/tests/test_unit.py:20: AssertionError: assert 'M2' == 'M1'
+FAILED tests/test_integration.py::test_I2_repeated_sensor_event_creates_one_ticket
+FAILED tests/test_unit.py::test_U1_priority_matrix_all_nine_cells[High-High-M1]
+
+==============================================================================
+DEFECT D3-overlap-ignores-approved
+  double booking: an overlapping request is accepted when the earlier one is Approved
+  file: campus/services.py
+  injected-run exit=1  | 1 failed, 95 passed in 0.53s
+  failing tests: test_I4_overlap_rejected_adjacent_accepted_and_approved_still_blocks
+  after correction exit=0 | 96 passed in 0.56s
+
+--- raw output with defect (failures only) ---
+E   assert 201 == 409
+/home/claude/campus-platform/tests/test_integration.py:73: assert 201 == 409
+FAILED tests/test_integration.py::test_I4_overlap_rejected_adjacent_accepted_and_approved_still_blocks
+
+==============================================================================
+DEFECT D4-restricted-approval-unchecked
+  an approver may approve a restricted laboratory booking
+  file: campus/services.py
+  injected-run exit=1  | 1 failed, 95 passed in 0.62s
+  failing tests: test_I8_restricted_lab_approval_needs_manager_or_admin
+  after correction exit=0 | 96 passed in 0.57s
+
+--- raw output with defect (failures only) ---
+E   AssertionError: assert 200 == 403
+/home/claude/campus-platform/tests/test_integration.py:121: AssertionError: assert 200 == 403
+FAILED tests/test_integration.py::test_I8_restricted_lab_approval_needs_manager_or_admin
+
+==============================================================================
+DEFECT D5-sensor-duplicate-not-detected
+  retried sensor event is not recognised -> duplicate ticket path
+  file: campus/services.py
+  injected-run exit=1  | 1 failed, 95 passed in 0.53s
+  failing tests: test_I2_repeated_sensor_event_creates_one_ticket
+  after correction exit=0 | 96 passed in 0.54s
+
+--- raw output with defect (failures only) ---
+E   KeyError: 'ticket_id'
+sqlite3.IntegrityError: UNIQUE constraint failed: tickets.source, tickets.event_id
+/home/claude/campus-platform/tests/test_integration.py:44: KeyError: 'ticket_id'
+FAILED tests/test_integration.py::test_I2_repeated_sensor_event_creates_one_ticket
+
+==============================================================================
+DEFECT D6-synced-without-remote-id
+  ticket shown as Synced although the tracker never confirmed it
+  file: campus/services.py
+  injected-run exit=1  | 1 failed, 95 passed in 0.55s
+  failing tests: test_I6_tracker_outage_keeps_local_work_pending_then_sync_without_duplicates
+  after correction exit=0 | 96 passed in 0.64s
+
+--- raw output with defect (failures only) ---
+E   AssertionError: assert (201 == 201 and 'Synced' == 'Pending'
+/home/claude/campus-platform/tests/test_integration.py:96: AssertionError: assert (201 == 201 and 'Synced' == 'Pending'
+FAILED tests/test_integration.py::test_I6_tracker_outage_keeps_local_work_pending_then_sync_without_duplicates
+

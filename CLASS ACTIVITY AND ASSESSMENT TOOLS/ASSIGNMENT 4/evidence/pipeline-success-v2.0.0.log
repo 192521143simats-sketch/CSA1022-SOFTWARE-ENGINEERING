@@ -1,0 +1,101 @@
+PIPELINE START  commit=d19105ccb2f42917dd2d1958e5b4eb8b07baea8a  version=v2.0.0  2026-11-20T12:29:51Z
+
+=== STAGE: 1 checkout
+tracked-file changes: 0
+commit d19105ccb2f42917dd2d1958e5b4eb8b07baea8a
+author Student
+subject pipeline: migration rehearsal gate
+--- [PASS] 1 checkout (0s)
+
+=== STAGE: 2 dependency setup
+No broken requirements found.
+Python 3.13.18
+--- [PASS] 2 dependency setup (2s)
+
+=== STAGE: 3 compile / lint
+--- [PASS] 3 compile / lint (0s)
+
+=== STAGE: 4a unit tests
+..............................................................           [100%]
+62 passed, 61 deselected in 0.04s
+--- [PASS] 4a unit tests (0s)
+
+=== STAGE: 4b integration tests
+........................                                                 [100%]
+24 passed, 99 deselected in 0.47s
+--- [PASS] 4b integration tests (1s)
+
+=== STAGE: 4c regression tests
+..........                                                               [100%]
+10 passed, 113 deselected in 0.20s
+--- [PASS] 4c regression tests (0s)
+
+=== STAGE: 4d security tests
+..................                                                       [100%]
+18 passed, 105 deselected in 0.26s
+--- [PASS] 4d security tests (1s)
+
+=== STAGE: 4e migration + recovery tests
+.........                                                                [100%]
+9 passed, 114 deselected in 0.12s
+--- [PASS] 4e migration + recovery tests (0s)
+
+=== STAGE: 4f migration rehearsal on synthetic v1 data (gate)
+    - audit: original data changed (before 320 rows, after 315 rows; checksum DIFFERENT)
+6. recovery: restore verified backup, then re-run the safe migration
+   restored schema 1 | data identical to pre-migration: True
+   re-migrated; MIGRATION GATE: PASSED
+--- [PASS] 4f migration rehearsal on synthetic v1 data (gate) (0s)
+
+=== STAGE: 5 coverage gate (>=80%)
+campus/__init__.py          2      0   100%
+campus/app.py             131     16    88%
+campus/auth.py             36      6    83%
+campus/backup.py           78     15    81%
+campus/db.py               64      4    94%
+campus/integration.py      57      2    96%
+campus/policy.py           16      0   100%
+campus/rules.py            59      0   100%
+campus/services.py        175     15    91%
+campus/tracker.py          36      9    75%
+-------------------------------------------
+TOTAL                     654     67    90%
+Required test coverage of 80% reached. Total coverage: 89.76%
+123 passed, 9 warnings in 1.26s
+--- [PASS] 5 coverage gate (>=80%) (2s)
+
+=== STAGE: 6a static analysis (bandit)
+--- [PASS] 6a static analysis (bandit) (0s)
+
+=== STAGE: 6b dependency audit (pip-audit)
+No known vulnerabilities found
+--- [PASS] 6b dependency audit (pip-audit) (5s)
+
+=== STAGE: 6c secret scan
+secret-scan: 51 tracked file(s) scanned, 0 finding(s)
+
+--- [PASS] 6c secret scan (0s)
+
+=== STAGE: 7 package (commit-tagged)
+NOTE: Docker registry unreachable here -> building a release bundle from the commit instead of an image
+bb0b70959c7a875f42c540f098a50d8f0a166e3744423ca3c6211f53510a8afa  campus-backend-d19105ccb2f4.tar.gz
+--- [PASS] 7 package (commit-tagged) (2s)
+
+=== STAGE: 8 deploy to isolated env + smoke
+applied: [1, 2]
+PASS ready
+deployed version: {'commit': 'd19105ccb2f42917dd2d1958e5b4eb8b07baea8a', 'version': 'v2.0.0'}
+PASS deployed commit matches pipeline commit
+PASS faculty can create booking
+PASS student cannot approve (403)
+PASS approver can approve
+PASS overlap rejected (409)
+PASS ticket created with priority M3
+PASS technician transition
+PASS no token -> 401
+PASS v2 booking created with policy version
+PASS old v1 client still reads its booking
+SMOKE PASSED
+--- [PASS] 8 deploy to isolated env + smoke (1s)
+
+PIPELINE RESULT: SUCCESS  commit=d19105ccb2f4  version=v2.0.0

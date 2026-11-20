@@ -1,0 +1,72 @@
+applied: [1]
+{
+ "environment": {
+  "python": "3.13.18",
+  "platform": "Linux-6.18.44-fc-v726-x86_64-with-glibc2.39",
+  "cpus": 2,
+  "server": "gunicorn 2 workers x 4 threads, SQLite WAL",
+  "client": "stdlib threads, new connection per request, same host"
+ },
+ "levels": [
+  {
+   "clients": 10,
+   "duration_s": 10.1,
+   "requests": 9332,
+   "ok": 9332,
+   "errors": 0,
+   "status_codes": {
+    "201": 4666,
+    "200": 4666
+   },
+   "throughput_rps": 925.8,
+   "p50_ms": 5.7,
+   "p95_ms": 28.0,
+   "max_ms": 936.6
+  },
+  {
+   "clients": 25,
+   "duration_s": 10.1,
+   "requests": 9008,
+   "ok": 9008,
+   "errors": 0,
+   "status_codes": {
+    "201": 4504,
+    "200": 4504
+   },
+   "throughput_rps": 890.5,
+   "p50_ms": 22.6,
+   "p95_ms": 61.6,
+   "max_ms": 1048.7
+  },
+  {
+   "clients": 50,
+   "duration_s": 10.2,
+   "requests": 8024,
+   "ok": 8024,
+   "errors": 0,
+   "status_codes": {
+    "201": 4012,
+    "200": 4012
+   },
+   "throughput_rps": 789.9,
+   "p50_ms": 59.1,
+   "p95_ms": 133.7,
+   "max_ms": 1630.6
+  }
+ ],
+ "replay": {
+  "posted": 200,
+  "created_201": 20,
+  "duplicates_200": 180,
+  "other": 0,
+  "distinct_tickets": 20,
+  "expected_distinct": 20,
+  "wall_s": 0.15,
+  "max_ms": 83.7
+ }
+}
+--- final row counts in the load database:
+bookings 6591
+tickets 6611
+audit 19813
+integrity: ok

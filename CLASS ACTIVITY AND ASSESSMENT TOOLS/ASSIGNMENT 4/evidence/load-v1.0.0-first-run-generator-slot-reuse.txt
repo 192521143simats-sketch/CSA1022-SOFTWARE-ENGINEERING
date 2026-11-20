@@ -1,0 +1,76 @@
+applied: [1]
+{
+ "environment": {
+  "python": "3.13.18",
+  "platform": "Linux-6.18.44-fc-v726-x86_64-with-glibc2.39",
+  "cpus": 2,
+  "server": "gunicorn 2 workers x 4 threads, SQLite WAL",
+  "client": "stdlib threads, new connection per request, same host"
+ },
+ "levels": [
+  {
+   "clients": 10,
+   "duration_s": 10.1,
+   "requests": 10188,
+   "ok": 10188,
+   "errors": 0,
+   "status_codes": {
+    "201": 5094,
+    "200": 5094
+   },
+   "throughput_rps": 1006.5,
+   "p50_ms": 5.1,
+   "p95_ms": 25.8,
+   "max_ms": 642.4
+  },
+  {
+   "clients": 25,
+   "duration_s": 10.1,
+   "requests": 10260,
+   "ok": 8268,
+   "errors": 1992,
+   "status_codes": {
+    "409": 996,
+    "201": 4134,
+    "404": 996,
+    "200": 4134
+   },
+   "throughput_rps": 1018.7,
+   "p50_ms": 20.7,
+   "p95_ms": 51.9,
+   "max_ms": 837.1
+  },
+  {
+   "clients": 50,
+   "duration_s": 10.2,
+   "requests": 9412,
+   "ok": 7086,
+   "errors": 2326,
+   "status_codes": {
+    "409": 1163,
+    "201": 3543,
+    "404": 1163,
+    "200": 3543
+   },
+   "throughput_rps": 924.4,
+   "p50_ms": 50.3,
+   "p95_ms": 116.7,
+   "max_ms": 837.2
+  }
+ ],
+ "replay": {
+  "posted": 200,
+  "created_201": 20,
+  "duplicates_200": 180,
+  "other": 0,
+  "distinct_tickets": 20,
+  "expected_distinct": 20,
+  "wall_s": 0.21,
+  "max_ms": 116.4
+ }
+}
+--- final row counts in the load database:
+bookings 5306
+tickets 7485
+audit 20276
+integrity: ok

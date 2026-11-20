@@ -1,0 +1,92 @@
+PIPELINE START  commit=782d0042c456e28912f4a85ce2cdb988533db033  version=v1.0.0  2026-11-20T12:33:51Z
+
+=== STAGE: 1 checkout
+tracked-file changes: 0
+commit 782d0042c456e28912f4a85ce2cdb988533db033
+author Student
+subject secret scan: scan tracked files only; add scanner self-tests
+--- [PASS] 1 checkout (0s)
+
+=== STAGE: 2 dependency setup
+No broken requirements found.
+Python 3.13.18
+--- [PASS] 2 dependency setup (6s)
+
+=== STAGE: 3 compile / lint
+--- [PASS] 3 compile / lint (0s)
+
+=== STAGE: 4a unit tests
+........................................................                 [100%]
+56 passed, 42 deselected in 0.07s
+--- [PASS] 4a unit tests (1s)
+
+=== STAGE: 4b integration tests
+...........                                                              [100%]
+11 passed, 87 deselected in 0.47s
+--- [PASS] 4b integration tests (1s)
+
+=== STAGE: 4c regression tests
+........                                                                 [100%]
+8 passed, 90 deselected in 0.14s
+--- [PASS] 4c regression tests (0s)
+
+=== STAGE: 4d security tests
+..................                                                       [100%]
+18 passed, 80 deselected in 0.26s
+--- [PASS] 4d security tests (1s)
+
+=== STAGE: 4e migration + recovery tests
+.....                                                                    [100%]
+5 passed, 93 deselected in 0.05s
+--- [PASS] 4e migration + recovery tests (0s)
+
+=== STAGE: 5 coverage gate (>=80%)
+Name                 Stmts   Miss  Cover
+----------------------------------------
+campus/__init__.py       2      0   100%
+campus/app.py          108     16    85%
+campus/auth.py          36      6    83%
+campus/backup.py        78     15    81%
+campus/db.py            64      4    94%
+campus/rules.py         59      0   100%
+campus/services.py     168     15    91%
+campus/tracker.py       30      9    70%
+----------------------------------------
+TOTAL                  545     65    88%
+Required test coverage of 80% reached. Total coverage: 88.07%
+98 passed, 2 warnings in 0.79s
+--- [PASS] 5 coverage gate (>=80%) (1s)
+
+=== STAGE: 6a static analysis (bandit)
+--- [PASS] 6a static analysis (bandit) (1s)
+
+=== STAGE: 6b dependency audit (pip-audit)
+No known vulnerabilities found
+--- [PASS] 6b dependency audit (pip-audit) (3s)
+
+=== STAGE: 6c secret scan
+secret-scan: 35 tracked file(s) scanned, 0 finding(s)
+
+--- [PASS] 6c secret scan (0s)
+
+=== STAGE: 7 package (commit-tagged)
+NOTE: Docker registry unreachable here -> building a release bundle from the commit instead of an image
+c9d611710605e78a60a8c16cb75718718480f88ac7a76b80232bec2a2d1cf20d  campus-backend-782d0042c456.tar.gz
+--- [PASS] 7 package (commit-tagged) (0s)
+
+=== STAGE: 8 deploy to isolated env + smoke
+applied: [1]
+PASS ready
+deployed version: {'commit': '782d0042c456e28912f4a85ce2cdb988533db033', 'version': 'v1.0.0'}
+PASS deployed commit matches pipeline commit
+PASS faculty can create booking
+PASS student cannot approve (403)
+PASS approver can approve
+PASS overlap rejected (409)
+PASS ticket created with priority M3
+PASS technician transition
+PASS no token -> 401
+SMOKE PASSED
+--- [PASS] 8 deploy to isolated env + smoke (1s)
+
+PIPELINE RESULT: SUCCESS  commit=782d0042c456  version=v1.0.0

@@ -1,0 +1,43 @@
+PIPELINE START  commit=f65e76dd807c063554f6144140ea04622d6428a2  version=v1.0.0  2026-11-20T03:14:37Z
+
+=== STAGE: 1 checkout
+tracked-file changes: 0
+commit f65e76dd807c063554f6144140ea04622d6428a2
+author Student
+subject pipeline: hermetic venv, ignore dist/.venv
+--- [PASS] 1 checkout (0s)
+
+=== STAGE: 2 dependency setup
+No broken requirements found.
+Python 3.13.18
+--- [PASS] 2 dependency setup (7s)
+
+=== STAGE: 3 compile / lint
+--- [PASS] 3 compile / lint (0s)
+
+=== STAGE: 4a unit tests
+......................................................                   [100%]
+54 passed, 37 deselected in 0.04s
+--- [PASS] 4a unit tests (1s)
+
+=== STAGE: 4b integration tests
+...........                                                              [100%]
+11 passed, 80 deselected in 0.24s
+--- [PASS] 4b integration tests (0s)
+
+=== STAGE: 4c regression tests
+........                                                                 [100%]
+8 passed, 83 deselected in 0.12s
+--- [PASS] 4c regression tests (1s)
+
+=== STAGE: 4d security tests
+..................                                                       [100%]
+18 passed, 73 deselected in 0.24s
+--- [PASS] 4d security tests (0s)
+
+=== STAGE: 4e migration + recovery tests
+
+91 deselected in 0.01s
+--- [FAIL] 4e migration + recovery tests
+!!! QUALITY GATE FAILED at '4e migration + recovery tests' -> package + deploy stages SKIPPED; previous release stays live
+PIPELINE RESULT: BLOCKED  commit=f65e76dd807c
