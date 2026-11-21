@@ -1,0 +1,92 @@
+# Step 1: fork the repository (server-side copy)
+
+$ git clone --bare remote/team-app.git remote/R-SARVESH-team-app-fork.git
+Cloning into bare repository 'remote/R-SARVESH-team-app-fork.git'...
+done.
+
+$ git clone remote/R-SARVESH-team-app-fork.git app
+Cloning into 'app'...
+done.
+
+$ git remote add upstream ../remote/team-app.git
+
+
+$ git remote -v
+origin	/home/claude/lab/exp25/remote/R-SARVESH-team-app-fork.git (fetch)
+origin	/home/claude/lab/exp25/remote/R-SARVESH-team-app-fork.git (push)
+upstream	../remote/team-app.git (fetch)
+upstream	../remote/team-app.git (push)
+
+# Step 2: a team member adds a new feature to the ORIGINAL repository
+
+$ git clone remote/team-app.git teammate
+Cloning into 'teammate'...
+done.
+
+$ git commit -am 'Teammate: add square()'
+[main 531a3ac] Teammate: add square()
+ 1 file changed, 4 insertions(+)
+
+$ git push origin main
+To /home/claude/lab/exp25/remote/team-app.git
+   3086e90..531a3ac  main -> main
+
+# Step 3: fetch the latest changes from upstream so my fork is current
+
+$ git fetch upstream
+From ../remote/team-app
+ * [new branch]      main       -> upstream/main
+
+$ git merge upstream/main
+Updating 3086e90..531a3ac
+Fast-forward
+ calc.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+$ git push origin main
+To /home/claude/lab/exp25/remote/R-SARVESH-team-app-fork.git
+   3086e90..531a3ac  main -> main
+
+$ grep -n 'def square' calc.py
+17:def square(a):
+
+# Step 4: create a NEW branch so existing code is untouched
+
+$ git checkout -b feature/modulo
+Switched to a new branch 'feature/modulo'
+
+$ python3 -c "from calc import modulo, square; print('modulo(10,3) =', modulo(10,3)); print('square(4) =', square(4))"
+modulo(10,3) = 1
+square(4) = 16
+
+$ git commit -am 'Add modulo() feature'
+[feature/modulo e60f68f] Add modulo() feature
+ 1 file changed, 4 insertions(+)
+
+$ git push -u origin feature/modulo
+branch 'feature/modulo' set up to track 'origin/feature/modulo'.
+To /home/claude/lab/exp25/remote/R-SARVESH-team-app-fork.git
+ * [new branch]      feature/modulo -> feature/modulo
+
+# Step 5: pull request from my fork's feature/modulo to the original repo's main
+
+$ git diff --stat upstream/main feature/modulo
+ calc.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+$ git log --oneline upstream/main..feature/modulo
+e60f68f Add modulo() feature
+
+$ git diff upstream/main feature/modulo
+diff --git a/calc.py b/calc.py
+index 1181389..c567a1a 100644
+--- a/calc.py
++++ b/calc.py
+@@ -16,3 +16,7 @@ def divide(a, b):
+ 
+ def square(a):
+     return a * a
++
++
++def modulo(a, b):
++    return a % b
