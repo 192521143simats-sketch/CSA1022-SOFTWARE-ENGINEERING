@@ -1,0 +1,90 @@
+# Step 1: Flask API with basic endpoints
+
+$ ls -R | head -20
+.:
+Dockerfile
+app.py
+k8s
+requirements.txt
+test_app.py
+
+./k8s:
+deployment.yaml
+service.yaml
+
+$ cat app.py | head -30
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+STUDENTS = {1: {"id": 1, "name": "Arun", "dept": "CSE"},
+            2: {"id": 2, "name": "Priya", "dept": "IT"}}
+
+
+@app.route("/")
+def home():
+    return jsonify(message="Student API running on Kubernetes", version="1.0")
+
+
+@app.route("/health")
+def health():
+    return jsonify(status="healthy")
+
+
+@app.route("/api/students", methods=["GET"])
+def list_students():
+    return jsonify(list(STUDENTS.values()))
+
+
+@app.route("/api/students/<int:sid>", methods=["GET"])
+def get_student(sid):
+    s = STUDENTS.get(sid)
+    return (jsonify(s), 200) if s else (jsonify(error="student not found"), 404)
+
+
+@app.route("/api/students", methods=["POST"])
+
+# Step 1: unit tests for the API
+
+$ python3 -m pytest -v 2>&1 | tail -15
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/claude/lab/d12/flask-k8s-app
+plugins: platformdirs-4.13.5, anyio-4.15.1
+collecting ... collected 6 items
+
+test_app.py::test_home PASSED                                            [ 16%]
+test_app.py::test_health PASSED                                          [ 33%]
+test_app.py::test_list_students PASSED                                   [ 50%]
+test_app.py::test_get_missing_student PASSED                             [ 66%]
+test_app.py::test_add_student PASSED                                     [ 83%]
+test_app.py::test_add_requires_name PASSED                               [100%]
+
+============================== 6 passed in 0.08s ===============================
+
+# Step 1: run the API and call the endpoints
+
+$ curl -s http://127.0.0.1:5000/
+{"message":"Student API running on Kubernetes","version":"1.0"}
+
+$ curl -s http://127.0.0.1:5000/health
+{"status":"healthy"}
+
+$ curl -s http://127.0.0.1:5000/api/students
+[{"dept":"CSE","id":1,"name":"Arun"},{"dept":"IT","id":2,"name":"Priya"}]
+
+$ curl -s -X POST -H 'Content-Type: application/json' -d '{"name":"Meena","dept":"ECE"}' http://127.0.0.1:5000/api/students
+{"dept":"ECE","id":3,"name":"Meena"}
+
+$ curl -s http://127.0.0.1:5000/api/students/3
+{"dept":"ECE","id":3,"name":"Meena"}
+
+# Step 5: check that the Kubernetes manifests are consistent (Service selector matches Deployment pods)
+
+$ python3 /home/claude/lab/tools/k8s_check.py k8s/deployment.yaml k8s/service.yaml
+Service flask-api-service  selector {'app': 'flask-api'} -> matches a Deployment: True
+Deployment flask-api        replicas=2  selector matches pod labels: True
+
+Objects found: Deployment/flask-api, Service/flask-api-service
+RESULT: OK - no problems found
