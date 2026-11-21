@@ -1,0 +1,72 @@
+# Step 1: create the repository on GitHub with a README (here: a bare repo seeded with README.md)
+
+$ git init --bare -b main remote/my-personal-project.git
+Initialized empty Git repository in /home/claude/lab/exp20/remote/my-personal-project.git/
+
+$ git clone remote/my-personal-project.git seed
+Cloning into 'seed'...
+warning: You appear to have cloned an empty repository.
+done.
+
+$ git add README.md && git commit -m 'Initial commit'
+[main (root-commit) 8457f9b] Initial commit
+ 1 file changed, 1 insertion(+)
+ create mode 100644 README.md
+
+$ git push -u origin main
+branch 'main' set up to track 'origin/main'.
+To /home/claude/lab/exp20/remote/my-personal-project.git
+ * [new branch]      main -> main
+
+# Step 2: clone to my local machine
+
+$ git clone remote/my-personal-project.git project
+Cloning into 'project'...
+done.
+
+$ ls -la
+total 16
+drwxr-xr-x 3 root root 4096 Nov 21 05:19 .
+drwxr-xr-x 5 root root 4096 Nov 21 05:19 ..
+drwxr-xr-x 8 root root 4096 Nov 21 05:19 .git
+-rw-r--r-- 1 root root   22 Nov 21 05:19 README.md
+
+# Step 3: edit README.md - add a project description
+
+$ cat README.md
+# my-personal-project
+
+## Description
+A personal project to practise Git and GitHub for the Software Engineering lab.
+
+## What I will learn
+- creating and cloning repositories
+- staging, committing and pushing changes
+
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   README.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+# Step 4: stage, commit and push
+
+$ git add README.md
+
+
+$ git commit -m 'Add project description to README'
+[main b62bad2] Add project description to README
+ 1 file changed, 7 insertions(+)
+
+$ git push origin main
+To /home/claude/lab/exp20/remote/my-personal-project.git
+   8457f9b..b62bad2  main -> main
+
+$ git log --oneline
+b62bad2 Add project description to README
+8457f9b Initial commit
