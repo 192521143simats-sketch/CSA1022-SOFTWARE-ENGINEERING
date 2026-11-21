@@ -1,0 +1,6 @@
+*   3d34356 R SARVESH Merge pull request #1 from R-SARVESH/feature/power-function
+|\  
+| * 2dbb365 R SARVESH Address review: add docstring and document power()
+| * 04a617a R SARVESH Add power function with unit test
+|/  
+* 71d8236 Priya Teammate Initial commit: basic calculator

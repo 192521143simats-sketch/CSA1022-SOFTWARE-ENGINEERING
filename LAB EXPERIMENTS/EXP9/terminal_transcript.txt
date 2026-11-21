@@ -1,0 +1,167 @@
+# Step 1: FORK - a fork is a server-side copy of the original repo under my account
+
+$ git clone --bare remote/calculator.git remote/R-SARVESH-calculator-fork.git
+Cloning into bare repository 'remote/R-SARVESH-calculator-fork.git'...
+done.
+
+# Step 2: CLONE my fork to my machine
+
+$ git clone remote/R-SARVESH-calculator-fork.git calculator
+Cloning into 'calculator'...
+done.
+
+$ git remote add upstream ../remote/calculator.git
+
+
+$ git remote -v
+origin	/home/claude/lab/exp9/remote/R-SARVESH-calculator-fork.git (fetch)
+origin	/home/claude/lab/exp9/remote/R-SARVESH-calculator-fork.git (push)
+upstream	../remote/calculator.git (fetch)
+upstream	../remote/calculator.git (push)
+
+$ ls
+README.md
+calc.py
+test_calc.py
+
+# Step 3: create a feature branch
+
+$ git checkout -b feature/power-function
+Switched to a new branch 'feature/power-function'
+
+$ git branch
+* feature/power-function
+  main
+
+# Step 4: add a new function and a test
+
+$ git diff --stat
+ calc.py      | 4 ++++
+ test_calc.py | 5 ++++-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+$ python3 -m unittest -v 2>&1
+test_add (test_calc.TestCalc.test_add) ... ok
+test_divide (test_calc.TestCalc.test_divide) ... ok
+test_multiply (test_calc.TestCalc.test_multiply) ... ok
+test_power (test_calc.TestCalc.test_power) ... ok
+test_subtract (test_calc.TestCalc.test_subtract) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.000s
+
+OK
+
+# Step 5: commit and push the branch to my fork
+
+$ git add calc.py test_calc.py
+
+
+$ git commit -m 'Add power function with unit test'
+[feature/power-function 04a617a] Add power function with unit test
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+$ git push -u origin feature/power-function
+branch 'feature/power-function' set up to track 'origin/feature/power-function'.
+To /home/claude/lab/exp9/remote/R-SARVESH-calculator-fork.git
+ * [new branch]      feature/power-function -> feature/power-function
+
+# Step 6: PULL REQUEST - what GitHub shows on the 'Files changed' tab (feature -> main)
+
+$ git log --oneline main..feature/power-function
+04a617a Add power function with unit test
+
+$ git diff main feature/power-function
+diff --git a/calc.py b/calc.py
+index 1a50db2..8207003 100644
+--- a/calc.py
++++ b/calc.py
+@@ -12,3 +12,7 @@ def multiply(a, b):
+ 
+ def divide(a, b):
+     return a / b
++
++
++def power(a, b):
++    return a ** b
+diff --git a/test_calc.py b/test_calc.py
+index e38727c..67d2cb2 100644
+--- a/test_calc.py
++++ b/test_calc.py
+@@ -1,5 +1,5 @@
+ import unittest
+-from calc import add, subtract, multiply, divide
++from calc import add, subtract, multiply, divide, power
+ 
+ 
+ class TestCalc(unittest.TestCase):
+@@ -15,6 +15,9 @@ class TestCalc(unittest.TestCase):
+     def test_divide(self):
+         self.assertEqual(divide(8, 2), 4)
+ 
++    def test_power(self):
++        self.assertEqual(power(2, 3), 8)
++
+ 
+ if __name__ == "__main__":
+     unittest.main()
+
+# Step 7: REVIEW - reviewer asks for an error message when b is huge / a docstring
+
+# Reviewer feedback saved in PR_REVIEW.md (see EXP9 folder)
+
+# Step 8: respond to feedback with additional commits on the SAME branch
+
+$ git add -A
+
+
+$ git commit -m 'Address review: add docstring and document power()'
+[feature/power-function 2dbb365] Address review: add docstring and document power()
+ 4 files changed, 4 insertions(+)
+ create mode 100644 __pycache__/calc.cpython-313.pyc
+ create mode 100644 __pycache__/test_calc.cpython-313.pyc
+
+$ git push
+To /home/claude/lab/exp9/remote/R-SARVESH-calculator-fork.git
+   04a617a..2dbb365  feature/power-function -> feature/power-function
+
+$ git log --oneline
+2dbb365 Address review: add docstring and document power()
+04a617a Add power function with unit test
+71d8236 Initial commit: basic calculator
+
+# Step 9: once approved, the PR is merged into main (merge commit, like GitHub's 'Merge pull request')
+
+$ git checkout main
+Your branch is up to date with 'origin/main'.
+Switched to branch 'main'
+
+$ git merge --no-ff feature/power-function -m 'Merge pull request #1 from R-SARVESH/feature/power-function'
+Merge made by the 'ort' strategy.
+ README.md                             |   3 +++
+ __pycache__/calc.cpython-313.pyc      | Bin 0 -> 683 bytes
+ __pycache__/test_calc.cpython-313.pyc | Bin 0 -> 1749 bytes
+ calc.py                               |   5 +++++
+ test_calc.py                          |   5 ++++-
+ 5 files changed, 12 insertions(+), 1 deletion(-)
+ create mode 100644 __pycache__/calc.cpython-313.pyc
+ create mode 100644 __pycache__/test_calc.cpython-313.pyc
+
+$ git push origin main
+To /home/claude/lab/exp9/remote/R-SARVESH-calculator-fork.git
+   71d8236..3d34356  main -> main
+
+$ python3 -m unittest 2>&1
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.000s
+
+OK
+
+$ git log --oneline --graph
+*   3d34356 Merge pull request #1 from R-SARVESH/feature/power-function
+|\  
+| * 2dbb365 Address review: add docstring and document power()
+| * 04a617a Add power function with unit test
+|/  
+* 71d8236 Initial commit: basic calculator
