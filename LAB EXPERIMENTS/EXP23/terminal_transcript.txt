@@ -1,0 +1,60 @@
+# Step 1: I clone the repository
+
+$ git clone remote/sample-repo.git me
+Cloning into 'me'...
+done.
+
+$ git log --oneline
+b7641cc Initial commit: basic calculator
+
+# Step 2: a collaborator makes a change and pushes it to GitHub
+
+$ git clone remote/sample-repo.git collaborator
+Cloning into 'collaborator'...
+done.
+
+$ git add calc.py
+
+
+$ git commit -m 'Add square() function'
+[main a654647] Add square() function
+ 1 file changed, 4 insertions(+)
+
+$ git push origin main
+To /home/claude/lab/exp23/remote/sample-repo.git
+   b7641cc..a654647  main -> main
+
+# My copy is now behind the remote
+
+$ git fetch origin
+From /home/claude/lab/exp23/remote/sample-repo
+   b7641cc..a654647  main       -> origin/main
+
+$ git status
+On branch main
+Your branch is behind 'origin/main' by 1 commit, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+
+nothing to commit, working tree clean
+
+# Step 3: pull the latest changes
+
+$ git pull origin main
+Updating b7641cc..a654647
+Fast-forward
+ calc.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+From /home/claude/lab/exp23/remote/sample-repo
+ * branch            main       -> FETCH_HEAD
+
+# Step 4: verify the collaborator's change is in my repo
+
+$ git log --oneline
+a654647 Add square() function
+b7641cc Initial commit: basic calculator
+
+$ grep -n 'def square' calc.py
+17:def square(a):
+
+$ git log -1 --format='Last commit by: %an - %s'
+Last commit by: Priya Teammate - Add square() function
