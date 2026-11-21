@@ -1,0 +1,67 @@
+# Step 1: the Flask To-Do application
+
+$ ls -la
+total 28
+drwxr-xr-x 2 root root 4096 Nov 21 05:18 .
+drwxr-xr-x 3 root root 4096 Nov 21 05:18 ..
+-rw-r--r-- 1 root root   49 Nov 21 05:18 .dockerignore
+-rw-r--r-- 1 root root  332 Nov 21 05:18 Dockerfile
+-rw-r--r-- 1 root root 3320 Nov 21 05:18 app.py
+-rw-r--r-- 1 root root   30 Nov 21 05:18 requirements.txt
+-rw-r--r-- 1 root root 1022 Nov 21 05:18 test_app.py
+
+$ cat Dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# install dependencies first (better Docker layer caching)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# copy the application code
+COPY app.py .
+
+EXPOSE 5000
+
+# gunicorn is a production-grade server for Flask
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+
+# Step 4: test the application's functionality (same code that goes inside the container)
+
+$ python3 -m pytest -v 2>&1 | tail -20
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/claude/lab/d16/todo-flask-app
+plugins: platformdirs-4.13.5, anyio-4.15.1
+collecting ... collected 6 items
+
+test_app.py::test_health PASSED                                          [ 16%]
+test_app.py::test_home_page_loads PASSED                                 [ 33%]
+test_app.py::test_add_task PASSED                                        [ 50%]
+test_app.py::test_toggle_task PASSED                                     [ 66%]
+test_app.py::test_delete_task PASSED                                     [ 83%]
+test_app.py::test_api_requires_title PASSED                              [100%]
+
+============================== 6 passed in 0.13s ===============================
+
+# Step 3-4: run the app and exercise it with real HTTP requests
+
+$ curl -s http://127.0.0.1:5000/health
+{"status":"ok"}
+
+$ curl -s -X POST -H 'Content-Type: application/json' -d '{"title":"Write Dockerfile"}' http://127.0.0.1:5000/api/todos
+{"done":false,"id":1,"title":"Write Dockerfile"}
+
+$ curl -s -X POST -H 'Content-Type: application/json' -d '{"title":"Build the image"}' http://127.0.0.1:5000/api/todos
+{"done":false,"id":2,"title":"Build the image"}
+
+$ curl -s -X POST -H 'Content-Type: application/json' -d '{"title":"Push to Docker Hub"}' http://127.0.0.1:5000/api/todos
+{"done":false,"id":3,"title":"Push to Docker Hub"}
+
+$ curl -s -o /dev/null -w 'toggle -> HTTP %{http_code}\n' -X POST http://127.0.0.1:5000/toggle/1
+toggle -> HTTP 302
+
+$ curl -s http://127.0.0.1:5000/api/todos
+[{"done":true,"id":1,"title":"Write Dockerfile"},{"done":false,"id":2,"title":"Build the image"},{"done":false,"id":3,"title":"Push to Docker Hub"}]
