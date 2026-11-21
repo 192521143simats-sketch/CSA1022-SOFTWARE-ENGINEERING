@@ -1,0 +1,129 @@
+# Step 1: clone the shared repository
+
+$ git clone remote/shared-project.git me
+Cloning into 'me'...
+done.
+
+$ git log --oneline
+14c0d5f Initial commit: basic calculator
+
+# Step 2-3: create a branch and edit the README
+
+$ git checkout -b feature/readme-update
+Switched to a new branch 'feature/readme-update'
+
+$ git status --short
+ M README.md
+
+$ git add README.md
+
+
+$ git commit -m 'Update README status line (feature branch)'
+[feature/readme-update 558847b] Update README status line (feature branch)
+ 1 file changed, 2 insertions(+)
+
+$ git push -u origin feature/readme-update
+branch 'feature/readme-update' set up to track 'origin/feature/readme-update'.
+To /home/claude/lab/exp10/remote/shared-project.git
+ * [new branch]      feature/readme-update -> feature/readme-update
+
+# Meanwhile a teammate edits THE SAME LINE of README on main and pushes
+
+$ git clone remote/shared-project.git teammate
+Cloning into 'teammate'...
+done.
+
+$ git commit -am 'Teammate: update README status line on main'
+[main 2dc1e6a] Teammate: update README status line on main
+ 1 file changed, 2 insertions(+)
+
+$ git push origin main
+To /home/claude/lab/exp10/remote/shared-project.git
+   14c0d5f..2dc1e6a  main -> main
+
+# Step 6-7: pull latest main, switch back to my feature branch
+
+$ git checkout main
+Your branch is up to date with 'origin/main'.
+Switched to branch 'main'
+
+$ git pull origin main
+Updating 14c0d5f..2dc1e6a
+Fast-forward
+ README.md | 2 ++
+ 1 file changed, 2 insertions(+)
+From /home/claude/lab/exp10/remote/shared-project
+ * branch            main       -> FETCH_HEAD
+   14c0d5f..2dc1e6a  main       -> origin/main
+
+$ git checkout feature/readme-update
+Your branch is up to date with 'origin/feature/readme-update'.
+Switched to branch 'feature/readme-update'
+
+# Step 8: merge main into my feature branch -> CONFLICT
+
+$ git merge main
+Auto-merging README.md
+CONFLICT (content): Merge conflict in README.md
+Automatic merge failed; fix conflicts and then commit the result.
+
+$ git status
+On branch feature/readme-update
+Your branch is up to date with 'origin/feature/readme-update'.
+
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+	both modified:   README.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+$ cat README.md
+# shared-project
+
+A tiny Python calculator used for the lab.
+
+<<<<<<< HEAD
+Status: Written by R SARVESH on my feature branch.
+=======
+Status: Updated by Priya on main with release notes.
+>>>>>>> main
+
+# Step 9: resolve manually - keep both pieces of information, remove the markers
+
+$ cat README.md
+# shared-project
+
+A tiny Python calculator used for the lab.
+
+Status: Updated by Priya on main with release notes. Reviewed and extended by R SARVESH.
+
+$ grep -c '<<<<<<<' README.md || echo 'no conflict markers left'
+0
+no conflict markers left
+
+$ git add README.md
+
+
+$ git status --short
+M  README.md
+
+# Step 10-11: commit the merge and push the branch
+
+$ git commit -m 'Merge main into feature/readme-update and resolve README conflict'
+[feature/readme-update 6fe4cee] Merge main into feature/readme-update and resolve README conflict
+
+$ git push origin feature/readme-update
+To /home/claude/lab/exp10/remote/shared-project.git
+   558847b..6fe4cee  feature/readme-update -> feature/readme-update
+
+$ git log --oneline --graph
+*   6fe4cee Merge main into feature/readme-update and resolve README conflict
+|\  
+| * 2dc1e6a Teammate: update README status line on main
+* | 558847b Update README status line (feature branch)
+|/  
+* 14c0d5f Initial commit: basic calculator
