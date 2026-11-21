@@ -1,0 +1,55 @@
+# Step 1: three tiers - frontend, backend and database
+
+$ find . -type f | sort
+./backend/Dockerfile
+./backend/app.py
+./backend/requirements.txt
+./backend/test_app.py
+./docker-compose.yml
+./frontend/Dockerfile
+./frontend/index.html
+./frontend/nginx.conf
+./k8s/00-secret.yaml
+./k8s/10-database.yaml
+./k8s/20-backend.yaml
+./k8s/30-frontend.yaml
+
+# Backend unit tests (in-memory mode, no database needed)
+
+$ python3 -m pytest -v 2>&1 | tail -12
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-9.1.1, pluggy-1.6.0 -- /usr/local/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/claude/lab/d18/multi-container-app/backend
+plugins: platformdirs-4.13.5, anyio-4.15.1
+collecting ... collected 3 items
+
+test_app.py::test_health_memory_mode PASSED                              [ 33%]
+test_app.py::test_add_and_list_note PASSED                               [ 66%]
+test_app.py::test_empty_note_rejected PASSED                             [100%]
+
+============================== 3 passed in 0.11s ===============================
+
+# Run the backend locally and call it
+
+$ curl -s http://127.0.0.1:5000/api/health
+{"database":"in-memory","status":"ok"}
+
+$ curl -s -X POST -H 'Content-Type: application/json' -d '{"text":"Kubernetes is fun"}' http://127.0.0.1:5000/api/notes
+{"saved":"Kubernetes is fun"}
+
+$ curl -s http://127.0.0.1:5000/api/notes
+["Kubernetes is fun"]
+
+# Step 2: validate the Kubernetes YAML files (offline)
+
+$ python3 /home/claude/lab/tools/k8s_check.py k8s/*.yaml
+Service db                 selector {'app': 'db'} -> matches a Deployment: True
+Service backend            selector {'app': 'backend'} -> matches a Deployment: True
+Service frontend           selector {'app': 'frontend'} -> matches a Deployment: True
+Deployment db               replicas=1  selector matches pod labels: True
+Deployment backend          replicas=2  selector matches pod labels: True
+Deployment frontend         replicas=2  selector matches pod labels: True
+
+Objects found: Secret/db-secret, Deployment/db, Service/db, Deployment/backend, Service/backend, Deployment/frontend, Service/frontend
+RESULT: OK - no problems found

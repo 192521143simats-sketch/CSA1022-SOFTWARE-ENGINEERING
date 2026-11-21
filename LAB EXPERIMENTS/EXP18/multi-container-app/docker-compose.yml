@@ -1,0 +1,13 @@
+# Quick local test of all three containers: docker compose up --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment: {POSTGRES_DB: notes, POSTGRES_USER: notes, POSTGRES_PASSWORD: notes}
+  backend:
+    build: ./backend
+    environment: {DB_HOST: db, DB_NAME: notes, DB_USER: notes, DB_PASSWORD: notes}
+    depends_on: [db]
+  frontend:
+    build: ./frontend
+    ports: ["8080:80"]
+    depends_on: [backend]

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels: {app: backend}
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: backend}
+  template:
+    metadata:
+      labels: {app: backend}
+    spec:
+      containers:
+        - name: backend
+          image: <dockerhub-username>/notes-backend:v1
+          ports: [{containerPort: 5000}]
+          env:
+            - {name: DB_HOST, value: db}
+            - {name: DB_NAME, valueFrom: {secretKeyRef: {name: db-secret, key: POSTGRES_DB}}}
+            - {name: DB_USER, valueFrom: {secretKeyRef: {name: db-secret, key: POSTGRES_USER}}}
+            - {name: DB_PASSWORD, valueFrom: {secretKeyRef: {name: db-secret, key: POSTGRES_PASSWORD}}}
+          readinessProbe:
+            httpGet: {path: /api/health, port: 5000}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector: {app: backend}
+  ports: [{port: 5000, targetPort: 5000}]
