@@ -1,0 +1,31 @@
+# Step 1: the website files
+
+$ ls -la
+total 20
+drwxr-xr-x 2 root root 4096 Nov 21 05:18 .
+drwxr-xr-x 3 root root 4096 Nov 21 05:18 ..
+-rw-r--r-- 1 root root   16 Nov 21 05:18 .dockerignore
+-rw-r--r-- 1 root root  273 Nov 21 05:18 Dockerfile
+-rw-r--r-- 1 root root 1486 Nov 21 05:18 index.html
+
+$ cat Dockerfile
+# Use the lightweight official Nginx image
+FROM nginx:alpine
+
+# Copy our website into the folder Nginx serves
+COPY index.html /usr/share/nginx/html/index.html
+
+# Nginx listens on port 80
+EXPOSE 80
+
+# nginx:alpine already starts Nginx in the foreground, so no CMD is needed
+
+# Checking the HTML is valid and that the Dockerfile has the instructions Nginx needs
+
+$ python3 -c "from html.parser import HTMLParser; HTMLParser().feed(open('index.html').read()); print('index.html parsed OK')"
+index.html parsed OK
+
+$ grep -nE '^(FROM|COPY|EXPOSE)' Dockerfile
+2:FROM nginx:alpine
+5:COPY index.html /usr/share/nginx/html/index.html
+8:EXPOSE 80
