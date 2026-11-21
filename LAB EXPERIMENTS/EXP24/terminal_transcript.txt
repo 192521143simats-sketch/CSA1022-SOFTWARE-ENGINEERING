@@ -1,0 +1,82 @@
+$ git clone remote/login-app.git app
+Cloning into 'app'...
+done.
+
+# Step 1: create the feature-login branch
+
+$ git checkout -b feature-login
+Switched to a new branch 'feature-login'
+
+$ git branch
+* feature-login
+  main
+
+# Step 2: add login.py with a simple login function (plus test)
+
+$ python3 login.py
+admin/admin123  -> True
+admin/wrong     -> False
+
+$ python3 -m unittest test_login -v 2>&1
+test_unknown_user (test_login.TestLogin.test_unknown_user) ... ok
+test_valid (test_login.TestLogin.test_valid) ... ok
+test_wrong_password (test_login.TestLogin.test_wrong_password) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK
+
+# Step 3: commit and push the branch
+
+$ git add login.py test_login.py
+
+
+$ git commit -m 'Add simple login function'
+[feature-login 5c9e888] Add simple login function
+ 2 files changed, 28 insertions(+)
+ create mode 100644 login.py
+ create mode 100644 test_login.py
+
+$ git push -u origin feature-login
+branch 'feature-login' set up to track 'origin/feature-login'.
+To /home/claude/lab/exp24/remote/login-app.git
+ * [new branch]      feature-login -> feature-login
+
+# Step 4: pull request feature-login -> main, then merge it
+
+$ git diff --stat main feature-login
+ login.py      | 11 +++++++++++
+ test_login.py | 17 +++++++++++++++++
+ 2 files changed, 28 insertions(+)
+
+$ git checkout main
+Your branch is up to date with 'origin/main'.
+Switched to branch 'main'
+
+$ git merge --no-ff feature-login -m 'Merge pull request #1 from feature-login'
+Merge made by the 'ort' strategy.
+ login.py      | 11 +++++++++++
+ test_login.py | 17 +++++++++++++++++
+ 2 files changed, 28 insertions(+)
+ create mode 100644 login.py
+ create mode 100644 test_login.py
+
+$ git push origin main
+To /home/claude/lab/exp24/remote/login-app.git
+   301d935..64dc102  main -> main
+
+$ git log --oneline --graph
+*   64dc102 Merge pull request #1 from feature-login
+|\  
+| * 5c9e888 Add simple login function
+|/  
+* 301d935 Initial commit: basic calculator
+
+$ ls
+README.md
+__pycache__
+calc.py
+login.py
+test_calc.py
+test_login.py
