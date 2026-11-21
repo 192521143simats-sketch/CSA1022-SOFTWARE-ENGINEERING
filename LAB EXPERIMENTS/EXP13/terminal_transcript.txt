@@ -1,0 +1,44 @@
+# Step 2: the sample application and its Dockerfile
+
+$ find . -type f | sort
+./.dockerignore
+./Dockerfile
+./Jenkinsfile
+./app.py
+./jenkins_setup.md
+./requirements.txt
+./test_app.py
+
+$ cat Dockerfile
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY app.py .
+EXPOSE 5000
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+
+# The 'Test' stage of the pipeline runs exactly this
+
+$ python3 -m pytest -v 2>&1 | tail -10
+cachedir: .pytest_cache
+rootdir: /home/claude/lab/d13/jenkins-cicd
+plugins: platformdirs-4.13.5, anyio-4.15.1
+collecting ... collected 3 items
+
+test_app.py::test_home PASSED                                            [ 33%]
+test_app.py::test_health PASSED                                          [ 66%]
+test_app.py::test_add PASSED                                             [100%]
+
+============================== 3 passed in 0.09s ===============================
+
+$ grep -nE "stage\('|triggers|githubPush|pollSCM" Jenkinsfile
+11:    triggers {
+12:        // trigger on GitHub webhook push; pollSCM is a fallback if the webhook cannot reach Jenkins
+13:        githubPush()
+14:        pollSCM('H/5 * * * *')
+18:        stage('Checkout') {
+22:        stage('Test') {
+34:        stage('Build Docker image') {
+38:        stage('Push image') {
+48:        stage('Deploy to cloud') {

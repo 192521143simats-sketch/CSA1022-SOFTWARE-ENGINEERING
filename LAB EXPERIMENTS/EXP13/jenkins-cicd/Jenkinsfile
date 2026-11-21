@@ -1,0 +1,67 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE   = "<dockerhub-username>/jenkins-demo"
+        TAG     = "${env.BUILD_NUMBER}"
+        // Jenkins credentials (Manage Jenkins -> Credentials) with these IDs:
+        DOCKERHUB = credentials('dockerhub-creds')
+    }
+
+    triggers {
+        // trigger on GitHub webhook push; pollSCM is a fallback if the webhook cannot reach Jenkins
+        githubPush()
+        pollSCM('H/5 * * * *')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Test') {
+            steps {
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install -r requirements.txt
+                    pytest -v --junitxml=report.xml
+                '''
+            }
+            post { always { junit 'report.xml' } }
+        }
+
+        stage('Build Docker image') {
+            steps { sh 'docker build -t $IMAGE:$TAG -t $IMAGE:latest .' }
+        }
+
+        stage('Push image') {
+            steps {
+                sh '''
+                    echo "$DOCKERHUB_PSW" | docker login -u "$DOCKERHUB_USR" --password-stdin
+                    docker push $IMAGE:$TAG
+                    docker push $IMAGE:latest
+                '''
+            }
+        }
+
+        stage('Deploy to cloud') {
+            // Example: a VM on AWS EC2 / GCP Compute Engine reachable over SSH (key stored as Jenkins credential 'deploy-ssh')
+            steps {
+                sshagent(credentials: ['deploy-ssh']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@<server-ip> "
+                          docker pull $IMAGE:latest &&
+                          docker rm -f app || true &&
+                          docker run -d --name app -p 80:5000 $IMAGE:latest"
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success { echo "Pipeline finished: $IMAGE:$TAG is deployed" }
+        failure { echo "Pipeline failed - check the stage logs" }
+    }
+}
