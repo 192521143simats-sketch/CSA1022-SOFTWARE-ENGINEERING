@@ -1,0 +1,166 @@
+# Step 1: set up a repository for a team project (bare repo = GitHub)
+
+$ git init --bare -b main remote/team-project.git
+Initialized empty Git repository in /home/claude/lab/exp15/remote/team-project.git/
+
+$ git clone remote/team-project.git lead
+Cloning into 'lead'...
+warning: You appear to have cloned an empty repository.
+done.
+
+$ git add . && git commit -m 'Initial commit: project skeleton'
+[main (root-commit) a435473] Initial commit: project skeleton
+ 2 files changed, 3 insertions(+)
+ create mode 100644 README.md
+ create mode 100644 app/__init__.py
+
+$ git push -u origin main
+branch 'main' set up to track 'origin/main'.
+To /home/claude/lab/exp15/remote/team-project.git
+ * [new branch]      main -> main
+
+# Step 2: one branch per module, each developer works separately
+
+$ git checkout -b module/auth
+Switched to a new branch 'module/auth'
+
+$ git add app/login.py && git commit -m 'Add auth module'
+[module/auth 24994a8] Add auth module
+ 1 file changed, 2 insertions(+)
+ create mode 100644 app/login.py
+
+$ git push -u origin module/auth
+branch 'module/auth' set up to track 'origin/module/auth'.
+To /home/claude/lab/exp15/remote/team-project.git
+ * [new branch]      module/auth -> module/auth
+
+$ git checkout main
+Your branch is up to date with 'origin/main'.
+Switched to branch 'main'
+
+$ git checkout -b module/payments
+Switched to a new branch 'module/payments'
+
+$ git add app/pay.py && git commit -m 'Add payments module'
+[module/payments bf915ac] Add payments module
+ 1 file changed, 2 insertions(+)
+ create mode 100644 app/pay.py
+
+$ git push -u origin module/payments
+branch 'module/payments' set up to track 'origin/module/payments'.
+To /home/claude/lab/exp15/remote/team-project.git
+ * [new branch]      module/payments -> module/payments
+
+$ git checkout main
+Your branch is up to date with 'origin/main'.
+Switched to branch 'main'
+
+$ git checkout -b module/ui
+Switched to a new branch 'module/ui'
+
+$ git add app/ui.py && git commit -m 'Add ui module'
+[module/ui 7bbca6f] Add ui module
+ 1 file changed, 2 insertions(+)
+ create mode 100644 app/ui.py
+
+$ git push -u origin module/ui
+branch 'module/ui' set up to track 'origin/module/ui'.
+To /home/claude/lab/exp15/remote/team-project.git
+ * [new branch]      module/ui -> module/ui
+
+$ git checkout main
+Your branch is up to date with 'origin/main'.
+Switched to branch 'main'
+
+$ git branch -a
+* main
+  module/auth
+  module/payments
+  module/ui
+  remotes/origin/main
+  remotes/origin/module/auth
+  remotes/origin/module/payments
+  remotes/origin/module/ui
+
+# Step 3: code review then merge each branch with a pull request (merge commit)
+
+$ git merge --no-ff module/auth -m 'Merge pull request: module/auth (reviewed)'
+Merge made by the 'ort' strategy.
+ app/login.py | 2 ++
+ 1 file changed, 2 insertions(+)
+ create mode 100644 app/login.py
+
+$ git merge --no-ff module/payments -m 'Merge pull request: module/payments (reviewed)'
+Merge made by the 'ort' strategy.
+ app/pay.py | 2 ++
+ 1 file changed, 2 insertions(+)
+ create mode 100644 app/pay.py
+
+$ git merge --no-ff module/ui -m 'Merge pull request: module/ui (reviewed)'
+Merge made by the 'ort' strategy.
+ app/ui.py | 2 ++
+ 1 file changed, 2 insertions(+)
+ create mode 100644 app/ui.py
+
+$ git push origin main
+To /home/claude/lab/exp15/remote/team-project.git
+   a435473..99be4c8  main -> main
+
+# Step 4: a conflict - two people edited the README at the same time
+
+$ git checkout -b docs/readme-me
+Switched to a new branch 'docs/readme-me'
+
+$ git commit -am 'README: list modules'
+[docs/readme-me 2bc5410] README: list modules
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+$ git checkout main
+Your branch is up to date with 'origin/main'.
+Switched to branch 'main'
+
+$ git commit -am 'README: list modules (full names)'
+[main db5cc04] README: list modules (full names)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+$ git merge docs/readme-me
+Auto-merging README.md
+CONFLICT (content): Merge conflict in README.md
+Automatic merge failed; fix conflicts and then commit the result.
+
+$ cat README.md
+# Team Project - Student Portal
+
+<<<<<<< HEAD
+Modules: Authentication, Payments, User Interface
+=======
+Modules: auth, payments, ui
+>>>>>>> docs/readme-me
+
+$ git add README.md && git commit -m 'Resolve README conflict and document the team workflow'
+[main e31b7d1] Resolve README conflict and document the team workflow
+
+$ git push origin main
+To /home/claude/lab/exp15/remote/team-project.git
+   99be4c8..e31b7d1  main -> main
+
+$ git log --oneline --graph
+*   e31b7d1 Resolve README conflict and document the team workflow
+|\  
+| * 2bc5410 README: list modules
+* | db5cc04 README: list modules (full names)
+|/  
+*   99be4c8 Merge pull request: module/ui (reviewed)
+|\  
+| * 7bbca6f Add ui module
+* |   5597a46 Merge pull request: module/payments (reviewed)
+|\ \  
+| * | bf915ac Add payments module
+| |/  
+* |   ac1045e Merge pull request: module/auth (reviewed)
+|\ \  
+| |/  
+|/|   
+| * 24994a8 Add auth module
+|/  
+* a435473 Initial commit: project skeleton
