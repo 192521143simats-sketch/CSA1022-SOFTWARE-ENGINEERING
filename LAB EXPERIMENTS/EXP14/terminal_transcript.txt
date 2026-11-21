@@ -1,0 +1,45 @@
+# Step 1: the Dockerized application
+
+$ find . -type f | sort
+./.dockerignore
+./.github/workflows/cd.yml
+./Dockerfile
+./app.py
+./k8s/deployment.yaml
+./requirements.txt
+./test_app.py
+
+# Step 4 (part): the same tests the pipeline's first job will run
+
+$ python3 -m pytest -v 2>&1 | tail -10
+cachedir: .pytest_cache
+rootdir: /home/claude/lab/d14/github-actions-cd
+plugins: platformdirs-4.13.5, anyio-4.15.1
+collecting ... collected 3 items
+
+test_app.py::test_home PASSED                                            [ 33%]
+test_app.py::test_health PASSED                                          [ 66%]
+test_app.py::test_add PASSED                                             [100%]
+
+============================== 3 passed in 0.08s ===============================
+
+# Step 2-3: validate the workflow file
+
+$ python3 /home/claude/lab/tools/yaml_validate.py .github/workflows/cd.yml
+.github/workflows/cd.yml: valid YAML
+  name    : CI-CD Docker Deploy
+  triggers: ['push', 'pull_request']
+  job 'test' runs-on ubuntu-latest
+     - actions/checkout@v4
+     - actions/setup-python@v5
+     - None
+     - None
+  job 'build-and-push' runs-on ubuntu-latest, needs test
+     - actions/checkout@v4
+     - docker/login-action@v3
+     - docker/build-push-action@v6
+  job 'deploy' runs-on ubuntu-latest, needs build-and-push
+     - actions/checkout@v4
+     - google-github-actions/auth@v2
+     - google-github-actions/get-gke-credentials@v2
+     - Roll out the new image
