@@ -1,0 +1,43 @@
+# Step 1: repository for a containerized Flask application
+
+$ find . -type f | sort
+./.dockerignore
+./.github/workflows/ci-cd.yml
+./Dockerfile
+./app.py
+./requirements.txt
+./test_app.py
+
+$ python3 -m pytest -v 2>&1 | tail -10
+cachedir: .pytest_cache
+rootdir: /home/claude/lab/d19/flask-cicd-pipeline
+plugins: platformdirs-4.13.5, anyio-4.15.1
+collecting ... collected 3 items
+
+test_app.py::test_home PASSED                                            [ 33%]
+test_app.py::test_health PASSED                                          [ 66%]
+test_app.py::test_add PASSED                                             [100%]
+
+============================== 3 passed in 0.08s ===============================
+
+$ curl -s http://127.0.0.1:5000/
+{"message":"Hello from the CI/CD pipeline!","version":"1.0"}
+
+$ curl -s http://127.0.0.1:5000/add/20/22
+{"result":42}
+
+$ python3 /home/claude/lab/tools/yaml_validate.py .github/workflows/ci-cd.yml
+.github/workflows/ci-cd.yml: valid YAML
+  name    : Flask CI-CD
+  triggers: ['push']
+  job 'test' runs-on ubuntu-latest
+     - actions/checkout@v4
+     - actions/setup-python@v5
+     - None
+     - Run tests
+  job 'docker' runs-on ubuntu-latest, needs test
+     - actions/checkout@v4
+     - docker/login-action@v3
+     - Build and push image to Docker Hub
+  job 'deploy' runs-on ubuntu-latest, needs docker
+     - Trigger Render deploy of the Docker Hub image
