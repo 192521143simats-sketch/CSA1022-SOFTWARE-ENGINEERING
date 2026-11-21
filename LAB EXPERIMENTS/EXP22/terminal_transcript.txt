@@ -1,0 +1,40 @@
+# Step 1: clone a repository (from EXP21)
+
+$ git clone remote/sample-repo.git
+Cloning into 'sample-repo'...
+done.
+
+# Step 2: modify README.md
+
+$ git status --short
+ M README.md
+
+# Step 3: stage
+
+$ git add README.md
+
+
+$ git status --short
+M  README.md
+
+# Step 4: commit with the required message
+
+$ git commit -m "Updated README"
+[main 25c14b1] Updated README
+ 1 file changed, 2 insertions(+)
+
+# Step 5: push to GitHub
+
+$ git push origin main
+To /home/claude/lab/exp22/remote/sample-repo.git
+   36a7800..25c14b1  main -> main
+
+$ git log --oneline
+25c14b1 Updated README
+36a7800 Initial commit: basic calculator
+
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
