@@ -1,0 +1,13 @@
+# Step 1: static website + Dockerfile
+
+$ ls -la
+total 16
+drwxr-xr-x 2 root root 4096 Nov 21 05:18 .
+drwxr-xr-x 3 root root 4096 Nov 21 05:18 ..
+-rw-r--r-- 1 root root   77 Nov 21 05:18 Dockerfile
+-rw-r--r-- 1 root root  941 Nov 21 05:18 index.html
+
+$ cat Dockerfile
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+EXPOSE 80
