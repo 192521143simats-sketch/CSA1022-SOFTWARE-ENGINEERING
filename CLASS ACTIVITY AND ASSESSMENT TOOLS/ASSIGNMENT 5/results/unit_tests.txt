@@ -1,0 +1,48 @@
+test_clean_verifies (test_audit.TestAudit.test_clean_verifies) ... ok
+test_commitment_matches_content (test_audit.TestAudit.test_commitment_matches_content) ... ok
+test_erasure_breaks_chain_when_content_hashed_in (test_audit.TestAudit.test_erasure_breaks_chain_when_content_hashed_in) ... ok
+test_erasure_keeps_chain_with_commitments (test_audit.TestAudit.test_erasure_keeps_chain_with_commitments) ... ok
+test_naive_edit_detected (test_audit.TestAudit.test_naive_edit_detected) ... ok
+test_privileged_rewrite_needs_checkpoint (test_audit.TestAudit.test_privileged_rewrite_needs_checkpoint) ... ok
+test_salt_blocks_dictionary_attack (test_audit.TestAudit.test_salt_blocks_dictionary_attack) ... ok
+test_truncation_needs_checkpoint (test_audit.TestAudit.test_truncation_needs_checkpoint) ... ok
+test_pending_when_down_then_recovers (test_credentials.TestCredentials.test_pending_when_down_then_recovers) ... ok
+test_retry_then_issue_once (test_credentials.TestCredentials.test_retry_then_issue_once) ... ok
+test_tamper_rejected (test_credentials.TestCredentials.test_tamper_rejected) ... ok
+test_abstention_is_routine (test_matrix.TestMatrix.test_abstention_is_routine) ... ok
+test_invalid (test_matrix.TestMatrix.test_invalid) ... ok
+test_monotonic (test_matrix.TestMatrix.test_monotonic) ... ok
+test_nine_cells (test_matrix.TestMatrix.test_nine_cells) ... ok
+test_results_json_is_reproduced_exactly (test_reproducibility.TestReproducibility.test_results_json_is_reproduced_exactly) ... ok
+test_bad_version (test_rubric.TestRubric.test_bad_version) ... ok
+test_baseline_counts_concepts (test_rubric.TestRubric.test_baseline_counts_concepts) ... ok
+test_baseline_is_forced_choice_never_manual (test_rubric.TestRubric.test_baseline_is_forced_choice_never_manual) ... ok
+test_dataset_integrity (test_rubric.TestRubric.test_dataset_integrity) ... ok
+test_deterministic (test_rubric.TestRubric.test_deterministic) ... ok
+test_do_not_interfere_is_not_treated_as_negated_term (test_rubric.TestRubric.test_do_not_interfere_is_not_treated_as_negated_term) ... ok
+test_negation_abstains (test_rubric.TestRubric.test_negation_abstains) ... ok
+test_short_answer_abstains_v1 (test_rubric.TestRubric.test_short_answer_abstains_v1) ... ok
+test_term_listing_v1_forced_v2_abstains (test_rubric.TestRubric.test_term_listing_v1_forced_v2_abstains) ... ok
+test_zero_or_one_match_abstains (test_rubric.TestRubric.test_zero_or_one_match_abstains) ... ok
+test_hand_calculation_for_A (test_selection_simulation.TestSelection.test_hand_calculation_for_A) ... ok
+test_scores_in_range (test_selection_simulation.TestSelection.test_scores_in_range) ... ok
+test_selection_can_change (test_selection_simulation.TestSelection.test_selection_can_change) ... ok
+test_weights_sum_100 (test_selection_simulation.TestSelection.test_weights_sum_100) ... ok
+test_kappa_perfect_and_chance (test_selection_simulation.TestSimulation.test_kappa_perfect_and_chance) ... ok
+test_noise_lowers_kappa (test_selection_simulation.TestSimulation.test_noise_lowers_kappa) ... ok
+test_seeded_and_repeatable (test_selection_simulation.TestSimulation.test_seeded_and_repeatable) ... ok
+test_assistant_cannot_approve (test_workflow.TestWorkflow.test_assistant_cannot_approve) ... ok
+test_audit_has_no_student_identifier (test_workflow.TestWorkflow.test_audit_has_no_student_identifier) ... ok
+test_cannot_erase_current_mark (test_workflow.TestWorkflow.test_cannot_erase_current_mark) ... ok
+test_cannot_skip_moderation (test_workflow.TestWorkflow.test_cannot_skip_moderation) ... ok
+test_dispute_window (test_workflow.TestWorkflow.test_dispute_window) ... ok
+test_examiner_cannot_approve (test_workflow.TestWorkflow.test_examiner_cannot_approve) ... ok
+test_normal_path_and_correction_history (test_workflow.TestWorkflow.test_normal_path_and_correction_history) ... ok
+test_override_needs_reason (test_workflow.TestWorkflow.test_override_needs_reason) ... ok
+test_redaction (test_workflow.TestWorkflow.test_redaction) ... ok
+test_unassigned_examiner_forbidden (test_workflow.TestWorkflow.test_unassigned_examiner_forbidden) ... ok
+
+----------------------------------------------------------------------
+Ran 43 tests in 3.217s
+
+OK

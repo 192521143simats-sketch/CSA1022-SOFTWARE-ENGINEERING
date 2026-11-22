@@ -1,0 +1,214 @@
+CSA10 Assignment 5 - Responsible technology adoption demonstrator
+seed=2026 | python 3.13.18 | standard library only
+Trained ML and Blockchain are evaluated as options; neither is implemented here.
+
+==============================================================================
+C2  Rule assistant vs forced-choice baseline (24 synthetic answers, expert-labelled)
+==============================================================================
+ id style             expert  baseline v1             v2 (R1)        v2 reason
+  1 standard          High    High     High           High           rules
+  2 standard          High    High     High           High           rules
+  3 standard          High    High     High           High           rules
+  4 standard          High    High     High           High           rules
+  5 standard          Medium  Medium   Medium         Medium         rules
+  6 standard          Medium  Medium   Medium         Medium         rules
+  7 standard          Medium  Medium   Medium         Medium         rules
+  8 short_or_offtopic Low     Low      Manual Review  Manual Review  insufficient_evidence
+  9 short_or_offtopic Low     Low      Manual Review  Manual Review  insufficient_evidence
+ 10 wrong_explanation Low     Medium*  Medium*        Medium*        rules
+ 11 paraphrased       High    Low*     Manual Review  Manual Review  insufficient_evidence
+ 12 paraphrased       High    Low*     Manual Review  Manual Review  insufficient_evidence
+ 13 negated           Low     Medium*  Manual Review  Manual Review  negated_term
+ 14 term_listing      Low     High*    High*          Manual Review  unexplained_terms
+ 15 term_listing      Low     High*    High*          Manual Review  unexplained_terms
+ 16 standard          High    High     High           High           rules
+ 17 standard          Medium  Medium   Medium         Medium         rules
+ 18 standard          Medium  Medium   Medium         Medium         rules
+ 19 paraphrased       Medium  Low*     Manual Review  Manual Review  insufficient_evidence
+ 20 paraphrased       Medium  Low*     Manual Review  Manual Review  insufficient_evidence
+ 21 short_or_offtopic Low     Low      Manual Review  Manual Review  insufficient_evidence
+ 22 wrong_explanation Low     Medium*  Medium*        Medium*        rules
+ 23 standard          Medium  Medium   Medium         Medium         rules
+ 24 standard          High    High     High           High           rules
+(* = wrong suggestion)
+
+method     answered  manual  correct  wrong  acc/ans  coverage     wrong-rate 95% CI
+baseline         24       0       15      9     0.62    100.0%          [0.21, 0.57]
+v1               16       8       12      4     0.75     66.7%          [0.10, 0.49]
+v2               14      10       12      2     0.86     58.3%          [0.04, 0.40]
+
+By answer style (fairness audit):  wrong/answered  [manual]
+style                 n  baseline        v1              v2              
+negated               1  1/1  [0]        0/0  [1]        0/0  [1]        
+paraphrased           4  4/4  [0]        0/0  [4]        0/0  [4]        
+short_or_offtopic     3  0/3  [0]        0/0  [3]        0/0  [3]        
+standard             12  0/12  [0]       0/12  [0]       0/12  [0]       
+term_listing          2  2/2  [0]        2/2  [0]        0/0  [2]        
+wrong_explanation     2  2/2  [0]        2/2  [0]        2/2  [0]        
+
+Pre-registered prediction: baseline wrong >= 6; v1 wrong <= 2
+  baseline wrong = 9  -> PASS
+  v1 wrong       = 4  -> FAIL   (target missed -> revision R1 applied)
+  v2 wrong       = 2  (post-revision; <= 2 would be PASS)
+Acceptance threshold wrong-rate on answered <= 10%: v2 observed 0.143 -> FAIL on this tiny set; 95% CI [0.04, 0.399] (far too wide to establish a rate)
+
+Incorrect-input scenario (term listing): row 14 v1=High -> v2=Manual Review; row 15 v1=High -> v2=Manual Review (expert Low)
+
+==============================================================================
+C1  Stakes-discrepancy moderation matrix
+==============================================================================
+stakes  disc=0         disc=1         disc=2         
+Low     Routine        Routine        Priority       
+Medium  Routine        Priority       Urgent         
+High    Priority       Urgent         Urgent         
+cells correct: 9/9 | 1,000 repeated runs identical: True | monotonicity violations: 0 | invalid inputs rejected: 3/3
+C1 prediction (9/9, identical, 0 violations): PASS
+
+==============================================================================
+C3  Hash-chained audit log: tamper tests
+==============================================================================
+id  description                                               expected            observed                    
+T1  clean chain verifies                                      Pass                Pass                        PASS 
+T2  naive edit of entry 4 (no recompute)                      Detected            Detected at entry 4         PASS 
+T3  privileged edit + recompute, no checkpoint                Undetected          Undetected (chain verifies) PASS 
+T4  same edit against external head checkpoint                Detected            Detected (head_mismatch_vs_checkpoint)PASS 
+T5  truncate last two entries, no checkpoint                  Undetected          Undetected (chain verifies) PASS 
+T5b truncation against external checkpoint                    Detected            Detected (length_mismatch_vs_checkpoint)PASS 
+T6  false original mark entered in good faith                 Chain valid         Chain valid; truth NOT checkedPASS 
+T7a erase content that is hashed INTO the chain               Chain breaks        Chain breaks at entry 2     PASS 
+T7b erase content held OUTSIDE chain (commitment kept)        Chain valid         Chain valid                 PASS (content now unverifiable: True)
+T8  dictionary attack recovers low-entropy marks              3/3 unsalted, 0/3 salted3/3 unsalted, 0/3 salted    PASS 
+C3 prediction (all of T1..T8 as predicted): PASS
+
+==============================================================================
+C4  Role-controlled workflow checks
+==============================================================================
+id   check                                                             expected   observed   
+A1   assistant tries to approve a mark                                 Forbidden  Forbidden  PASS
+A2   examiner overrides shown suggestion without reason                Rejected   Rejected   PASS
+A2b  override WITH reason succeeds (stakes High -> priority)           ok         ok         PASS
+A3   examiner tries to approve                                         Forbidden  Forbidden  PASS
+A4   moderator tries to approve                                        Forbidden  Forbidden  PASS
+A5a  examiner evaluates (mark 8 matches suggestion)                    ok         ok         PASS
+A5b  moderator moderates                                               ok         ok         PASS
+A5c  controller approves (day 0)                                       ok         ok         PASS
+A6   student disputes own mark on day 3                                ok         ok         PASS
+A7   correction WITHOUT reason                                         Rejected   Rejected   PASS
+A8   correction WITH reason                                            ok         ok         PASS
+A9   student dispute on day 9 (window is 7 days)                       Rejected   Rejected   PASS
+A10a examiner views a script not assigned to them                      Forbidden  Forbidden  PASS
+A10b student views another student's record                            Forbidden  Forbidden  PASS
+A10c student disputes another student's record                         Forbidden  Forbidden  PASS
+A11  redacted export by export worker                                  ok         ok         PASS
+A11b no identifier remains in exported text                            0 leaks    0 leaks (2 redactions)   PASS
+A12  export worker tries to approve                                    Forbidden  Forbidden  PASS
+A13  DPO erases superseded mark value (version 1)                      ok         ok         PASS
+A13b chain valid; erased content unverifiable; current mark intact     valid/True/9True/True/9   PASS
+
+A100 history entries = 6 (before erasure note: 5), final mark = 9, state = CORRECTED
+   v1 examiner   evaluate       mark=None  reason='[erased]'
+   v2 moderator  moderate       mark=8     reason=''
+   v3 controller approve        mark=8     reason=''
+   v4 student    dispute        mark=8     reason='Q2 marked wrongly'
+   v5 controller correct        mark=9     reason='Q2 re-read; credit restored'
+   v6 dpo        erase_content  mark=9     reason='erased version 1: student erasure request'
+A101 moderation priority after override at High stakes: Urgent
+Moderation queue (highest first): [('A101', 'Urgent')]
+Refused attempts logged: 7
+C4 prediction (all workflow checks pass): PASS
+
+==============================================================================
+C5  Retry-safe credential issue (ledger excluded; conventional signed certificate)
+==============================================================================
+F1  verifier down 2 calls: first=issued; attempts=[(1, 'unavailable'), (2, 'unavailable'), (3, 'ok')]; repeat=already_issued; certificates=1; local marks unchanged=True  -> PASS
+F2  verifier down for whole window: first=pending_retry (pending kept, marks unchanged); after recovery=issued  -> PASS
+F3  employer check genuine=True; tampered grade A->O accepted=False  -> PASS
+    Limitation: HMAC stand-in; a real design uses asymmetric signatures. The check proves the record is unchanged since issue, not that grade 'A' was deserved.
+C5 prediction: PASS
+
+==============================================================================
+C6  Label-noise simulation (assumed noise; synthetic; NOT real marks)
+==============================================================================
+subject              noise  examiner agree   kappa  assistant vs ex1  vs TRUE  kappa>=0.6
+Databases             0.05           0.910   0.862             0.963    1.000        True
+Operating Systems     0.35           0.502   0.252             0.672    1.000       False
+Note: 'vs TRUE' is 1.000 by construction (text is generated from rubric terms) - not performance evidence.
+C6 prediction (DB kappa >= 0.7, OS kappa < 0.4): PASS
+
+==============================================================================
+Task 2  Weighted decision matrix and sensitivity
+==============================================================================
+Weights (%):  Usefulness 15 | Shared-trust need 10 | Reliability 20 | Privacy 15
+               Fairness 15 | Cost sustainability 15 | Governance readiness 10
+criterion                   A    B    C    D
+Usefulness                  3    4    1    4
+Shared-trust need           2    1    4    4
+Reliability                 4    2    3    2
+Privacy                     5    3    2    2
+Fairness                    3    2    3    2
+Cost sustainability         5    3    2    1
+Governance readiness        5    1    2    1
+WEIGHTED (out of 5)      3.90 2.40 2.40 2.25
+
+Sensitivity:
+  Base                                                A=3.90  B=2.40  C=2.40  D=2.25   best=A
+  S1 usefulness-heavy weights                         A=3.75  B=2.65  C=2.15  D=2.55   best=A
+  S2 validated labels exist                           A=3.90  B=3.05  C=2.40  D=2.70   best=A
+  S3 four institutions committed                      A=3.70  B=2.15  C=2.85  D=2.55   best=A
+  S4 cost and privacy deprioritised                   A=3.55  B=2.40  C=2.40  D=2.55   best=A
+  S5 labels exist + usefulness-heavy                  A=3.70  B=3.40  C=1.95  D=3.05   best=A
+  S6 labels + institutions + usefulness/trust-heavy   A=3.20  B=2.75  C=2.60  D=3.35   best=D
+
+Break-even weight at which an alternative first beats A (others scaled; None = never within 0-90%):
+  usefulness_base                         {'B': 67, 'C': None, 'D': 68}
+  usefulness_labels_validated             {'B': 55, 'C': None, 'D': 62}
+  shared_trust_base                       {'B': None, 'C': 49, 'D': 51}
+  shared_trust_institutions_committed     {'B': None, 'C': 46, 'D': 50}
+  shared_trust_both_conditions            {'B': None, 'C': 46, 'D': 44}
+
+Task 6 revised scores:
+  Usefulness                  3    4    1    3
+  Shared-trust need           2    1    1    1
+  Reliability                 4    1    2    1
+  Privacy                     5    3    2    2
+  Fairness                    3    1    3    1
+  Cost sustainability         5    2    1    1
+  Governance readiness        5    1    1    1
+  weighted, original weights: {'A': 3.9, 'B': 1.9, 'C': 1.65, 'D': 1.45}
+  weighted, revised weights : {'A': 3.95, 'B': 1.95, 'C': 1.75, 'D': 1.45}
+  revised weights (%): Usefulness 15 | Shared-trust need 5 | Reliability 20 | Privacy 15 | Fairness 20 | Cost sustainability 20 | Governance readiness 5
+
+==============================================================================
+Task 5  Resource and cost estimates (assumption-linked; only rule time is measured)
+==============================================================================
+answers/cycle=48,000  answers/year=96,000  per-answer storage=3.55 KB
+rule CPU (planning 1 ms/answer) = 48.0 CPU-s/cycle; storage = 166.4 MB/cycle, 332.8 MB/year
+budget per cycle: original 600 CPU-s, halved 300 CPU-s
+alt  CPU-s/cycle  storage MB/yr  label h/round  fixed Rs/yr  gov h/yr fits orig fits half
+A           48.0          332.8              0            0         0      True      True
+B          442.0          416.0            240            0         0      True     False
+C           48.0          335.9              0       72,000        48      True      True
+D          442.0          419.1            240       72,000        48      True     False
+All values except the measured rule time are ESTIMATES from the stated assumptions. No energy or carbon claim is made.
+
+==============================================================================
+Measured timing (single machine; NOT a production benchmark)
+==============================================================================
+rule evaluation (v2): median 0.0480 ms per answer over 5 runs of 12,000 evaluations
+audit append: 4.85 us/entry; verify 10,000 entries: 9.3 ms
+measured rule CPU for 48,000 answers = 2.304 CPU-s (planning figure uses 1 ms/answer)
+
+==============================================================================
+SUMMARY OF PRE-REGISTERED CLAIMS
+==============================================================================
+  C1 deterministic matrix                   PASS
+  C2a baseline wrong >= 6                   PASS
+  C2b v1 wrong <= 2 (target)                FAIL
+  C2c v2 wrong <= 2 (post-revision)         PASS
+  C2d v2 meets 10% wrong-rate threshold     FAIL
+  C3 audit tamper behaviour                 PASS
+  C4 workflow authorisation                 PASS
+  C5 retry-safe credential issue            PASS
+  C6 label noise limits agreement           PASS
+
+Wrote results/results.json and results/timing.json

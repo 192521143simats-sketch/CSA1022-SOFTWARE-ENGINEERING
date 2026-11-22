@@ -1,0 +1,20 @@
+{
+  "question": "Explain the ACID properties of a database transaction.",
+  "band_definition": {
+    "High": "Correctly explains at least three of the four properties.",
+    "Medium": "Correctly explains exactly two of the four properties.",
+    "Low": "Correctly explains one or none, gives an incorrect explanation, or only names the properties without explaining them."
+  },
+  "concepts": {
+    "atomicity":   ["atomic", "all or nothing", "all-or-nothing"],
+    "consistency": ["consisten", "valid state", "constraint", "integrity"],
+    "isolation":   ["isolat", "concurrent transactions", "interfer"],
+    "durability":  ["durab", "persist", "permanent", "survive", "committed data"]
+  },
+  "negation_patterns": [
+    "not required", "not needed", "not important", "not necessary",
+    "does not matter", "do not matter", "no need", "unnecessary",
+    "irrelevant", "never needed"
+  ],
+  "note": "Lexicon entries are lowercase stems/phrases written by the author. This is a deterministic rule set, NOT a trained model."
+}
